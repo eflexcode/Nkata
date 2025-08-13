@@ -2,17 +2,35 @@ package api
 
 import (
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
 )
 
 func IntiApi() {
 	r := chi.NewRouter()
+	
+	r.Use(middleware.RequestID)
+    r.Use(middleware.RealIP)
+    r.Use(middleware.Logger)
+    r.Use(middleware.Recoverer)
+
+	
+
+	log.Printf("/**\n" +
+		"* ·····························································\n" +
+		"* : _   _ _         _          ____                           :\n" +
+		"* :| \\ | | | ____ _| |_ __ _  / ___|  ___ _ ____   _____ _ __ :\n" +
+		"* :|  \\| | |/ / _` | __/ _` | \\___ \\ / _ \\ '__\\ \\ / / _ \\ '__|:\n" +
+		"* :| |\\  |   < (_| | || (_| |  ___) |  __/ |   \\ V /  __/ |   :\n" +
+		"* :|_| \\_|_|\\_\\__,_|\\__\\__,_| |____/ \\___|_|    \\_/ \\___|_|   :\n" +
+		"* ·····························································\n" +
+		"*/")
+	log.Printf("Nkata server started on port :3000")
 
 	r.Get("/test", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("test")
 	})
 
-	log.Printf("Nkata http server started on port :3000")
 	http.ListenAndServe(":3000", r)
 }
