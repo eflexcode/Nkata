@@ -15,7 +15,6 @@ func IntiApi() {
     r.Use(middleware.Logger)
     r.Use(middleware.Recoverer)
 
-	
 
 	log.Printf("/**\n" +
 		"* ·····························································\n" +
