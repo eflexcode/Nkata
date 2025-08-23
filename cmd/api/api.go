@@ -1,20 +1,22 @@
 package api
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func IntiApi() {
 	r := chi.NewRouter()
-	
-	r.Use(middleware.RequestID)
-    r.Use(middleware.RealIP)
-    r.Use(middleware.Logger)
-    r.Use(middleware.Recoverer)
 
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.Timeout(90 * time.Second))
 
 	log.Printf("/**\n" +
 		"* ·····························································\n" +
@@ -27,8 +29,13 @@ func IntiApi() {
 		"*/")
 	log.Printf("Nkata server started on port :3000")
 
-	r.Get("/test", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("test")
+	r.Route("/v1", func(r chi.Router) {
+
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/sign-up", CreateUser)
+			r.Post("/sign-in", SignIn)
+		})
+
 	})
 
 	http.ListenAndServe(":3000", r)

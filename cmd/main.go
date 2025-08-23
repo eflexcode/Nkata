@@ -13,9 +13,9 @@ func main() {
 	evn.InitEvn()
 
 	databaseConfig := database.DatabaseConfig{
-		Addr: evn.GetString("postgres://postgres:12345@localhost/nkata?sslmode=disable","DATABASE_ADDR"),
-		MaxOpenConn: evn.GetInt(20,"MAX_DATABASE_OPEN_CONN"),
-		MaxIdealConn: evn.GetInt(20,"MAX_DATABASE_IDEAL_CONN"),
+		Addr:         evn.GetString("postgres://postgres:12345@localhost/nkata?sslmode=disable", "DATABASE_ADDR"),
+		MaxOpenConn:  evn.GetInt(20, "MAX_DATABASE_OPEN_CONN"),
+		MaxIdealConn: evn.GetInt(20, "MAX_DATABASE_IDEAL_CONN"),
 		MaxIdealTime: "15m",
 	}
 
@@ -28,6 +28,6 @@ func main() {
 	defer db.Close()
 	log.Print("Database conection established")
 	api.IntiApi()
-
 	
+
 }

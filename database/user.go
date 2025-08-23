@@ -1,5 +1,9 @@
 package database
 
+import (
+	"database/sql"
+)
+
 type Role int
 
 const (
@@ -17,8 +21,28 @@ type User struct {
 	Bio          string `json:"bio"`
 	IsOnline     bool   `json:"is_online"`
 	FriendsCount int64  `json:"friends_count"`
-	GroupsCount  int16  `json:"groupsCount"`
+	GroupsCount  int16  `json:"groups_count"`
 	Role         Role   `json:"role"`
 	CreatedAt    string `json:"created_at"`
 	ModifiedAt   string `json:"modified_at"`
+}
+
+type UserRepository struct {
+	db *sql.DB
+}
+
+func NewUserRepository(db *sql.DB) *UserRepository{
+	return &UserRepository{db: db}
+}
+
+func (r *UserRepository) CreateUser(user *User) error {
+
+}
+
+func (r *UserRepository) GetByID(id int64) error{
+	
+}
+
+func (r *UserRepository) CheackUserNameAvailability(id int64) (bool,error){
+	
 }
