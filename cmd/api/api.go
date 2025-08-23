@@ -27,12 +27,13 @@ func IntiApi() {
 		"* :|_| \\_|_|\\_\\__,_|\\__\\__,_| |____/ \\___|_|    \\_/ \\___|_|   :\n" +
 		"* ·····························································\n" +
 		"*/")
+
 	log.Printf("Nkata server started on port :3000")
 
 	r.Route("/v1", func(r chi.Router) {
 
 		r.Route("/auth", func(r chi.Router) {
-			r.Post("/sign-up", CreateUser)
+			r.Post("/sign-up", RegisterUser)
 			r.Post("/sign-in", SignIn)
 		})
 
