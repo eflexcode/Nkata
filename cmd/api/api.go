@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"time"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func IntiApi() {
+func IntiApi(db *sql.DB) {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -33,7 +34,7 @@ func IntiApi() {
 	r.Route("/v1", func(r chi.Router) {
 
 		r.Route("/auth", func(r chi.Router) {
-			r.Post("/sign-up", RegisterUser)
+			r.Post("/sign-up", RegisterUser(r.,db))
 			r.Post("/sign-in", SignIn)
 		})
 

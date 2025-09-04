@@ -27,7 +27,7 @@ func main() {
 
 	defer db.Close()
 	log.Print("Database conection established")
-	api.IntiApi()
+	api.IntiApi(db)
 	
-
+//TODO work on interface struct for db connection
 }
