@@ -27,6 +27,7 @@ type User struct {
 	FriendsCount int64  `json:"friends_count"`
 	GroupsCount  int16  `json:"groups_count"`
 	Role         Role   `json:"_"`
+	Enabled      bool   `json:"enabled"`
 	CreatedAt    string `json:"created_at"`
 	ModifiedAt   string `json:"modified_at"`
 }
@@ -41,20 +42,20 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 func (r *UserRepository) CreateUser(ctx context.Context, user *User) error {
 
-	query := `INSERT INTO users (username,display_name,password,role) VALUES($1,$2,$3,$4)`
+	query := `INSERT INTO users (username,display_name,password,role,enabled) VALUES($1,$2,$3,$4,$5)`
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 
 	if err != nil {
-		return errors.New("Error hashing user password")
+		return errors.New("error hashing user password")
 	}
 
-	_, err = r.db.ExecContext(ctx, query, user.Username, user.DisplayName, string(hashedPassword), 0)
+	_, err = r.db.ExecContext(ctx, query, user.Username, user.DisplayName, string(hashedPassword), 0, true)
 
 	if err != nil {
 
 		if err.Error() == `pq: duplicate key value violates unique constraint "users_username_key"` {
-			return errors.New("User with username " + user.Username + " already exist")
+			return errors.New("user with username " + user.Username + " already exist")
 		} else {
 			return err
 		}
@@ -68,6 +69,24 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*User, error) {
 	query := `SELECT id,username,display_name,email,image_url,bio,is_online,friends_count,groups_count,created_at,modified_at FROM users WHERE id = $1`
 
 	row := r.db.QueryRowContext(ctx, query, id)
+
+	var user User
+
+	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.Email, &user.ImageUrl, &user.Bio, &user.IsOnline, &user.FriendsCount, &user.GroupsCount, &user.CreatedAt, &user.ModifiedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+
+}
+
+func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*User, error) {
+
+	query := `SELECT id,username,display_name,email,password,image_url,bio,is_online,friends_count,groups_count,created_at,modified_at FROM users WHERE username = $1`
+
+	row := r.db.QueryRowContext(ctx, query, username)
 
 	var user User
 

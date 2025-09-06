@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"log"
+	"main/database"
 	"net/http"
 	"time"
 
@@ -10,7 +11,16 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
+type ApiService struct {
+	userRpo *database.UserRepository
+}
+
+func NewRepos(userRepo *database.UserRepository) *ApiService {
+	return &ApiService{userRpo: userRepo}
+}
+
 func IntiApi(db *sql.DB) {
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -18,6 +28,29 @@ func IntiApi(db *sql.DB) {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(90 * time.Second))
+
+	uRepo := database.NewUserRepository(db)
+
+	apiService := NewRepos(uRepo)
+
+	r.Route("/v1", func(r chi.Router) {
+
+		r.Route("/user",func(r chi.Router) {
+			r.Get("/",apiService.GetByID)
+		})
+
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/sign-up", apiService.RegisterUser)
+			r.Post("/sign-in-with-username", apiService.SignInUsername)
+		})
+
+	})
+
+	err:= http.ListenAndServe(":5557", r)
+
+	if err != nil {
+		log.Printf("Nkata server failed to start")
+	}
 
 	log.Printf("/**\n" +
 		"* ·····························································\n" +
@@ -29,16 +62,5 @@ func IntiApi(db *sql.DB) {
 		"* ·····························································\n" +
 		"*/")
 
-	log.Printf("Nkata server started on port :3000")
-
-	r.Route("/v1", func(r chi.Router) {
-
-		r.Route("/auth", func(r chi.Router) {
-			r.Post("/sign-up", RegisterUser(r.,db))
-			r.Post("/sign-in", SignIn)
-		})
-
-	})
-
-	http.ListenAndServe(":3000", r)
+	log.Printf("Nkata server started on port: 5557")
 }

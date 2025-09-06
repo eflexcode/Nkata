@@ -5,8 +5,9 @@ import (
 	"net/http"
 )
 
-func ReadJson() {
-
+type StandardResponse struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
 }
 
 func writeJson(w http.ResponseWriter, status int, data any) error {
@@ -15,7 +16,6 @@ func writeJson(w http.ResponseWriter, status int, data any) error {
 	w.WriteHeader(status)
 
 	return json.NewEncoder(w).Encode(data)
-
 }
 
 func readJson(w http.ResponseWriter, r *http.Request, data any) error {

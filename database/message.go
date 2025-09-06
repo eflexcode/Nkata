@@ -28,6 +28,7 @@ type MessageType int
 const (
 	MessageChat MessageType = iota
 	MessageRaction
+	MessageInfo
 )
 
 type Message struct {

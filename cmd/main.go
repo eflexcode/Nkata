@@ -10,7 +10,9 @@ import (
 
 func main() {
 
-	evn.InitEvn()
+	if err := evn.InitEvn(); err != nil {
+		log.Print("Failed to load .env file useing hard coded defaults")
+	}
 
 	databaseConfig := database.DatabaseConfig{
 		Addr:         evn.GetString("postgres://postgres:12345@localhost/nkata?sslmode=disable", "DATABASE_ADDR"),
@@ -28,6 +30,5 @@ func main() {
 	defer db.Close()
 	log.Print("Database conection established")
 	api.IntiApi(db)
-	
-//TODO work on interface struct for db connection
+
 }
