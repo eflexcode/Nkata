@@ -12,25 +12,33 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type RegisterUserStruct struct {
+type RegisterUserPayload struct {
 	Username    string `json:"username"`
 	DisplayName string `json:"display_name"`
 	Password    string `json:"password"`
 }
 
-type LoginUsernameStuct struct {
+type LoginUsernamePayload struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-type LoginEmailStuct struct {
+type LoginEmailePayload struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-type OptStruct struct {
+type OptPayload struct {
 	Email string `json:"email"`
 	Otp   int    `json:"otp"`
+}
+
+type UsernamePayload struct {
+	Username string `json:"username"`
+}
+
+type BoolPayload struct{
+	Exist bool `json:"exist"`
 }
 
 type JwtJson struct {
@@ -39,7 +47,7 @@ type JwtJson struct {
 
 func (apiService *ApiService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
-	var payload RegisterUserStruct
+	var payload RegisterUserPayload
 
 	if err := readJson(w, r, payload); err != nil {
 		badRequest(w, r, err)
@@ -84,7 +92,7 @@ func (apiService *ApiService) RegisterUser(w http.ResponseWriter, r *http.Reques
 
 func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Request) {
 
-	var payload LoginUsernameStuct
+	var payload LoginUsernamePayload
 
 	if err := readJson(w, r, payload); err != nil {
 		badRequest(w, r, err)
@@ -111,15 +119,26 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 
 	claims := jwt.MapClaims{
 
-		"username":user.Username,
-		"exp":time.Now().Add(time.Hour*48),
-
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Hour * 48),
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
-	var secret := env.GetString() 
+	var secret_words string = "A request for a long text message: Search results showIf this is your intent, please clarify the context and what you want the text to be about."
 
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	secret := evn.GetString(secret_words, "JWT_SERECT")
 
+	tokenString, err := token.SignedString([]byte(secret))
+
+	if err != nil {
+		err := errors.New("failed to generate token")
+		internalServer(w, r, err)
+		return
+	}
+
+	tokenResponse := JwtJson{Token: tokenString}
+
+	writeJson(w, http.StatusAccepted, tokenResponse)
 }
 
 // sign in with email must verify email
@@ -139,6 +158,22 @@ func (api *ApiService) VerifyResetPasswordOtpEmail(w http.ResponseWriter, r *htt
 
 }
 
-func (api *ApiService) CheackUsernameAvailability(w http.ResponseWriter, r *http.Request) {
+func (apiService *ApiService) CheackUsernameAvailability(w http.ResponseWriter, r *http.Request) {
+
+	var payload UsernamePayload
+
+	if err := readJson(w, r, payload); err != nil {
+		badRequest(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+	exist := apiService.userRpo.CheackUsernameAvailability(ctx, payload.Username)
+
+	returnPayload := BoolPayload{
+		Exist: exist,
+	}
+
+	writeJson(w,http.StatusOK,returnPayload)
 
 }

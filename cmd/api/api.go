@@ -36,12 +36,14 @@ func IntiApi(db *sql.DB) {
 	r.Route("/v1", func(r chi.Router) {
 
 		r.Route("/user",func(r chi.Router) {
+			r.Use(HandleJWTAuth)
 			r.Get("/",apiService.GetByID)
 		})
 
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/sign-up", apiService.RegisterUser)
 			r.Post("/sign-in-with-username", apiService.SignInUsername)
+			r.Get("/check-username", apiService.CheackUsernameAvailability)
 		})
 
 	})

@@ -100,11 +100,15 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*U
 
 }
 
-func (r *UserRepository) CheackUsernameAvailability(ctx context.Context, id int64) bool {
+func (r *UserRepository) CheackUsernameAvailability(ctx context.Context, username string) bool {
 
-	query := `SELECT id FROM users WHERE id = $1`
-	row := r.db.QueryRowContext(ctx, query, id)
+	query := `SELECT username FROM users WHERE username = $1`
+	row := r.db.QueryRowContext(ctx, query, username)
 
-	return row.Err().Error() == sql.ErrNoRows.Error()
+	if row.Err().Error() == sql.ErrNoRows.Error() {
+		return false
+	}
+
+	return true
 
 }
