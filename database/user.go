@@ -26,7 +26,7 @@ type User struct {
 	IsOnline     bool   `json:"is_online"`
 	FriendsCount int64  `json:"friends_count"`
 	GroupsCount  int16  `json:"groups_count"`
-	Role         Role   `json:"_"`
+	Role         string   `json:"_"`
 	Enabled      bool   `json:"enabled"`
 	CreatedAt    string `json:"created_at"`
 	ModifiedAt   string `json:"modified_at"`

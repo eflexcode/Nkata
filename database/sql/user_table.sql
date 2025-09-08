@@ -1,0 +1,16 @@
+CREATE TABLE users (
+id SERIAL NOT NULL PRIMARY KEY ,
+username VARCHAR(100) NOT NULL UNIQUE,
+display_name VARCHAR(255),
+email VARCHAR(255) NOT NULL UNIQUE,
+password VARCHAR(255) NOT NULL,
+image_url VARCHAR(255),
+bio VARCHAR(255),
+is_online BOOLEAN ,
+friends_count INT,
+groups_count INT,
+role VARCHAR(255) NOT NULL,
+enabled BOOLEAN NOT NULL,
+created_at TIMESTAMP  WITH TIME ZONE DEFAULT NOW() NOT NULL,
+modified_at TIMESTAMP    
+)
