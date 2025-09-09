@@ -37,7 +37,7 @@ type UsernamePayload struct {
 	Username string `json:"username"`
 }
 
-type BoolPayload struct{
+type BoolPayload struct {
 	Exist bool `json:"exist"`
 }
 
@@ -49,7 +49,7 @@ func (apiService *ApiService) RegisterUser(w http.ResponseWriter, r *http.Reques
 
 	var payload RegisterUserPayload
 
-	if err := readJson(w, r, payload); err != nil {
+	if err := readJson(w, r, &payload); err != nil {
 		badRequest(w, r, err)
 		return
 	}
@@ -78,8 +78,14 @@ func (apiService *ApiService) RegisterUser(w http.ResponseWriter, r *http.Reques
 
 	if err != nil {
 
-		internalServer(w, r, err)
+		if err.Error() == `pq: duplicate key value violates unique constraint "users_username_key"` {
+			err := errors.New("user with username " + user.Username + " already exist")
+			conflict(w, r, err)
+		} else {
+			internalServer(w, r, err)
+		}
 
+		return
 	}
 
 	s := StandardResponse{
@@ -94,7 +100,7 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 
 	var payload LoginUsernamePayload
 
-	if err := readJson(w, r, payload); err != nil {
+	if err := readJson(w, r, &payload); err != nil {
 		badRequest(w, r, err)
 		return
 	}
@@ -108,6 +114,8 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 			unauthorized(w, r, err)
 			return
 		}
+		internalServer(w,r,errors.New("somthing went wrong"))
+		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password))
@@ -174,6 +182,6 @@ func (apiService *ApiService) CheackUsernameAvailability(w http.ResponseWriter, 
 		Exist: exist,
 	}
 
-	writeJson(w,http.StatusOK,returnPayload)
+	writeJson(w, http.StatusOK, returnPayload)
 
 }

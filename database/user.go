@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -26,7 +28,7 @@ type User struct {
 	IsOnline     bool   `json:"is_online"`
 	FriendsCount int64  `json:"friends_count"`
 	GroupsCount  int16  `json:"groups_count"`
-	Role         string   `json:"_"`
+	Role         string `json:"_"`
 	Enabled      bool   `json:"enabled"`
 	CreatedAt    string `json:"created_at"`
 	ModifiedAt   string `json:"modified_at"`
@@ -42,7 +44,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 func (r *UserRepository) CreateUser(ctx context.Context, user *User) error {
 
-	query := `INSERT INTO users (username,display_name,password,role,enabled) VALUES($1,$2,$3,$4,$5)`
+	query := `INSERT INTO users (username,display_name,email,password,image_url,bio,is_online,friends_count,groups_count,role,enabled,modified_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 
@@ -50,15 +52,11 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *User) error {
 		return errors.New("error hashing user password")
 	}
 
-	_, err = r.db.ExecContext(ctx, query, user.Username, user.DisplayName, string(hashedPassword), 0, true)
+	_, err = r.db.ExecContext(ctx, query, user.Username, user.DisplayName,"", string(hashedPassword),"","",false,0,0,0,true,time.Now())
 
 	if err != nil {
 
-		if err.Error() == `pq: duplicate key value violates unique constraint "users_username_key"` {
-			return errors.New("user with username " + user.Username + " already exist")
-		} else {
-			return err
-		}
+		return err
 	}
 
 	return nil
@@ -66,13 +64,13 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *User) error {
 
 func (r *UserRepository) GetByID(ctx context.Context, id int64) (*User, error) {
 
-	query := `SELECT id,username,display_name,email,image_url,bio,is_online,friends_count,groups_count,created_at,modified_at FROM users WHERE id = $1`
+	query := `SELECT id,username,display_name,email,password,image_url,bio,is_online,friends_count,groups_count,created_at,modified_at FROM users WHERE id = $1`
 
 	row := r.db.QueryRowContext(ctx, query, id)
 
 	var user User
 
-	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.Email, &user.ImageUrl, &user.Bio, &user.IsOnline, &user.FriendsCount, &user.GroupsCount, &user.CreatedAt, &user.ModifiedAt)
+	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.Email,&user.Password, &user.ImageUrl, &user.Bio, &user.IsOnline, &user.FriendsCount, &user.GroupsCount, &user.CreatedAt, &user.ModifiedAt)
 
 	if err != nil {
 		return nil, err
@@ -90,8 +88,8 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*U
 
 	var user User
 
-	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.Email, &user.ImageUrl, &user.Bio, &user.IsOnline, &user.FriendsCount, &user.GroupsCount, &user.CreatedAt, &user.ModifiedAt)
-
+	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.Email, &user.Password, &user.ImageUrl, &user.Bio, &user.IsOnline, &user.FriendsCount, &user.GroupsCount, &user.CreatedAt, &user.ModifiedAt)
+	log.Print(err)
 	if err != nil {
 		return nil, err
 	}

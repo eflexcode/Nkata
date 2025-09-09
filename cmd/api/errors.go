@@ -25,3 +25,10 @@ func unauthorized(w http.ResponseWriter, r *http.Request, err error) {
 
     errorResponse(w, http.StatusUnauthorized, err.Error())
 }
+
+func conflict(w http.ResponseWriter, r *http.Request, err error) {
+
+	log.Default().Println("Duplicate", "method", r.Method, "path", r.URL.Path, "error")
+
+    errorResponse(w, http.StatusConflict, err.Error())
+}
