@@ -128,7 +128,7 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 	claims := jwt.MapClaims{
 
 		"username": user.Username,
-		"exp":      time.Now().Add(time.Hour * 48),
+		"exp":    time.Now().Add(time.Hour * 48).Unix(),
 	}
 
 	var secret_words string = "A request for a long text message: Search results showIf this is your intent, please clarify the context and what you want the text to be about."

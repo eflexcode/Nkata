@@ -3,8 +3,10 @@ package api
 import (
 	"context"
 	"errors"
+	"log"
 	"main/internal/evn"
 	"net/http"
+	// "strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -32,6 +34,7 @@ func HandleJWTAuth(h http.Handler) http.Handler {
 		})
 
 		if err != nil {
+
 			err := errors.New("invalid token")
 			unauthorized(w, r, err)
 			return
@@ -40,15 +43,10 @@ func HandleJWTAuth(h http.Handler) http.Handler {
 		claims := token.Claims.(jwt.MapClaims)
 		exp := claims["exp"]
 
+		float_exp := exp.(float64)
+
+		t := time.Unix(int64(float_exp), 0)
 		date_now := time.Now()
-
-		t,ok := exp.(time.Time)
-
-		if !ok {
-			err := errors.New("token exp date cannot be confirmed")
-			unauthorized(w, r, err)
-			return
-		}
 
 		if t.Before(date_now) {
 			err := errors.New("token expired")
