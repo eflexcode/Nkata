@@ -47,6 +47,7 @@ func IntiApi(db *sql.DB) {
 		r.Route("/user",func(r chi.Router) {
 			r.Use(HandleJWTAuth)
 			r.Get("/",apiService.GetByUsername)
+			r.Get("/update",apiService.Update)
 		})
 
 		r.Route("/auth", func(r chi.Router) {

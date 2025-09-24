@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -29,7 +28,7 @@ type User struct {
 	FriendsCount int64  `json:"friends_count"`
 	GroupsCount  int16  `json:"groups_count"`
 	Role         string `json:"_"`
-	Enabled      bool   `json:"enabled"`
+	Enabled      bool   `json:"_"`
 	CreatedAt    string `json:"created_at"`
 	ModifiedAt   string `json:"modified_at"`
 }
@@ -52,7 +51,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *User) error {
 		return errors.New("error hashing user password")
 	}
 
-	_, err = r.db.ExecContext(ctx, query, user.Username, user.DisplayName,"", string(hashedPassword),"","",false,0,0,0,true,time.Now())
+	_, err = r.db.ExecContext(ctx, query, user.Username, user.DisplayName, "", string(hashedPassword), "", "", false, 0, 0, 0, true, time.Now())
 
 	if err != nil {
 
@@ -70,7 +69,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*User, error) {
 
 	var user User
 
-	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.Email,&user.Password, &user.ImageUrl, &user.Bio, &user.IsOnline, &user.FriendsCount, &user.GroupsCount, &user.CreatedAt, &user.ModifiedAt)
+	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.Email, &user.Password, &user.ImageUrl, &user.Bio, &user.IsOnline, &user.FriendsCount, &user.GroupsCount, &user.CreatedAt, &user.ModifiedAt)
 
 	if err != nil {
 		return nil, err
@@ -89,12 +88,42 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*U
 	var user User
 
 	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.Email, &user.Password, &user.ImageUrl, &user.Bio, &user.IsOnline, &user.FriendsCount, &user.GroupsCount, &user.CreatedAt, &user.ModifiedAt)
-	log.Print(err)
+
 	if err != nil {
 		return nil, err
 	}
 
 	return &user, nil
+
+}
+
+func (r *UserRepository) Update(ctx context.Context, username, displayName, bio string) error {
+
+	queryBoth := `UPDATE users SET display_name = ?, bio = ? WHERE username = ?`
+	queryBio := `UPDATE users SET bio = ? WHERE username = ?`
+	queryDisplay := `UPDATE users SET display_name = ? WHERE username = ?`
+
+	if displayName != "" && bio != "" {
+		_, err := r.db.ExecContext(ctx, queryBoth, displayName, bio, username)
+		if err != nil {
+			return err
+		}
+		return nil
+
+	} else if displayName != "" {
+		_, err := r.db.ExecContext(ctx, queryDisplay, displayName, username)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else if bio != "" {
+		_, err := r.db.ExecContext(ctx, queryBio, bio, username)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return errors.New("display_name and bio cannot both be empty")
 
 }
 

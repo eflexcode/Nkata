@@ -45,6 +45,10 @@ type JwtJson struct {
 	Token string `json:"token"`
 }
 
+type EmailPayload struct {
+	Email string `json:"email"`
+}
+
 func (apiService *ApiService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	var payload RegisterUserPayload
@@ -114,7 +118,7 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 			unauthorized(w, r, err)
 			return
 		}
-		internalServer(w,r,errors.New("somthing went wrong"))
+		internalServer(w, r, errors.New("somthing went wrong"))
 		return
 	}
 
@@ -128,7 +132,7 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 	claims := jwt.MapClaims{
 
 		"username": user.Username,
-		"exp":    time.Now().Add(time.Hour * 48).Unix(),
+		"exp":      time.Now().Add(time.Hour * 48).Unix(),
 	}
 
 	var secret_words string = "A request for a long text message: Search results showIf this is your intent, please clarify the context and what you want the text to be about."
@@ -149,6 +153,19 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 	writeJson(w, http.StatusAccepted, tokenResponse)
 }
 
+func (api *ApiService) AddEmail(w http.ResponseWriter, r *http.Request) {
+
+	var emailp EmailPayload
+
+	if err := readJson(w, r, &emailp); err != nil {
+		badRequest(w, r, err)
+		return
+	}
+
+	ctx = r.Context()
+
+}
+
 // sign in with email must verify email
 func (api *ApiService) SignInEmail(w http.ResponseWriter, r *http.Request) {
 
@@ -163,6 +180,10 @@ func (api *ApiService) SendResetPasswordOtpEmail(w http.ResponseWriter, r *http.
 }
 
 func (api *ApiService) VerifyResetPasswordOtpEmail(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (api *ApiService) ResetPassword(w http.ResponseWriter, r *http.Request) {
 
 }
 

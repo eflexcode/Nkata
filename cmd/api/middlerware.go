@@ -3,10 +3,8 @@ package api
 import (
 	"context"
 	"errors"
-	"log"
 	"main/internal/evn"
 	"net/http"
-	// "strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,6 +27,7 @@ func HandleJWTAuth(h http.Handler) http.Handler {
 		var secret_words string = "A request for a long text message: Search results showIf this is your intent, please clarify the context and what you want the text to be about."
 
 		secret := evn.GetString(secret_words, "JWT_SERECT")
+		
 		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (any, error) {
 			return []byte(secret), nil
 		})
@@ -42,6 +41,7 @@ func HandleJWTAuth(h http.Handler) http.Handler {
 
 		claims := token.Claims.(jwt.MapClaims)
 		exp := claims["exp"]
+		username := claims["username"]
 
 		float_exp := exp.(float64)
 
@@ -54,7 +54,7 @@ func HandleJWTAuth(h http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "user", claims)
+		ctx := context.WithValue(r.Context(), "user", username)
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 
