@@ -162,7 +162,7 @@ func (api *ApiService) AddEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx = r.Context()
+	// ctx = r.Context()
 
 }
 

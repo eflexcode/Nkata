@@ -47,7 +47,12 @@ func IntiApi(db *sql.DB) {
 		r.Route("/user",func(r chi.Router) {
 			r.Use(HandleJWTAuth)
 			r.Get("/",apiService.GetByUsername)
-			r.Get("/update",apiService.Update)
+			r.Put("/update",apiService.Update)
+			r.Post("/upload-profile-picture",apiService.UploadProfilPic)
+		})
+
+		r.Route("/media",func(r chi.Router) {
+			r.Get("/profiles/{img_name}",apiService.LoadProfilPic)
 		})
 
 		r.Route("/auth", func(r chi.Router) {

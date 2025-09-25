@@ -127,6 +127,15 @@ func (r *UserRepository) Update(ctx context.Context, username, displayName, bio 
 
 }
 
+func (r *UserRepository) UpdateProfilePicUrl(ctx context.Context, username, imageUrl string) error {
+
+	query := `UPDATE users SET image_url = ? WHERE username = ?`
+
+	_, err := r.db.ExecContext(ctx, query, imageUrl, username)
+	return err
+
+}
+
 func (r *UserRepository) CheackUsernameAvailability(ctx context.Context, username string) bool {
 
 	query := `SELECT username FROM users WHERE username = $1`
