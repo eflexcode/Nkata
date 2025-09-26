@@ -12,6 +12,13 @@ func badRequest(w http.ResponseWriter, r *http.Request, err error) {
     errorResponse(w, http.StatusBadRequest, err.Error())
 }
 
+func notFound(w http.ResponseWriter, r *http.Request, err error) {
+
+	log.Default().Println("badrequet", "method", r.Method, "path", r.URL.Path, "error")
+
+    errorResponse(w, http.StatusNotFound, err.Error())
+}
+
 func internalServer(w http.ResponseWriter, r *http.Request, err error) {
 
 	log.Default().Println("internalServer", "method", r.Method, "path", r.URL.Path, "error")

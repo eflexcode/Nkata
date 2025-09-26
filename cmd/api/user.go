@@ -3,10 +3,17 @@ package api
 import (
 	"context"
 	"errors"
+	"image"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+
+	_ "image/gif" 
+	_ "image/jpeg" 
+	_ "image/png"  
 )
 
 type UpdatePayload struct {
@@ -69,6 +76,13 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_,_, err = image.Decode(file)
+
+	if err != nil {
+		badRequest(w, r, err)
+		return
+	}
+
 	defer file.Close()
 
 	destinationFile, err := os.Create("C:\\Users\\5557\\Desktop\\nkata_uploads\\profile" + fileHeader.Filename)
@@ -87,9 +101,9 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url := "localhost:5557/v1/media/profiles/"+fileHeader.Filename
+	url := "localhost:5557/v1/media/profiles/" + fileHeader.Filename
 
-	api.userRpo.UpdateProfilePicUrl(ctx,username,url)
+	api.userRpo.UpdateProfilePicUrl(ctx, username, url)
 
 	s := StandardResponse{
 		Status:  http.StatusOK,
@@ -101,8 +115,20 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 
 func (api *ApiService) LoadProfilPic(w http.ResponseWriter, r *http.Request) {
 
-	
+	filename := chi.URLParam(r, "img_name")
+	url := "C:\\Users\\5557\\Desktop\\nkata_uploads\\profile" + filename
+	file, err := os.Open(url)
 
+	if err != nil {
+		notFound(w, r, err)
+		return
+	}
+	defer file.Close()
+
+	w.Header().Set("Content-Disposition", "attachment: "+filename)
+	w.Header().Set("Content-Type", "application/octet-stream")
+
+	http.ServeContent(w, r, filename, time.Now(), file)
 }
 
 func (api *ApiService) Update(w http.ResponseWriter, r *http.Request) {
