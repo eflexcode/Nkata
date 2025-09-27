@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -99,9 +100,9 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*U
 
 func (r *UserRepository) Update(ctx context.Context, username, displayName, bio string) error {
 
-	queryBoth := `UPDATE users SET display_name = ?, bio = ? WHERE username = ?`
-	queryBio := `UPDATE users SET bio = ? WHERE username = ?`
-	queryDisplay := `UPDATE users SET display_name = ? WHERE username = ?`
+	queryBoth := `UPDATE users SET display_name = $1, bio =$2 WHERE username = $3?`
+	queryBio := `UPDATE users SET bio = $1 WHERE username = $2`
+	queryDisplay := `UPDATE users SET display_name = $1 WHERE username = $2`
 
 	if displayName != "" && bio != "" {
 		_, err := r.db.ExecContext(ctx, queryBoth, displayName, bio, username)
@@ -117,6 +118,7 @@ func (r *UserRepository) Update(ctx context.Context, username, displayName, bio 
 		}
 		return nil
 	} else if bio != "" {
+		log.Println(queryBio)
 		_, err := r.db.ExecContext(ctx, queryBio, bio, username)
 		if err != nil {
 			return err
@@ -129,7 +131,7 @@ func (r *UserRepository) Update(ctx context.Context, username, displayName, bio 
 
 func (r *UserRepository) UpdateProfilePicUrl(ctx context.Context, username, imageUrl string) error {
 
-	query := `UPDATE users SET image_url = ? WHERE username = ?`
+	query := `UPDATE users SET image_url = $1 WHERE username = $2`
 
 	_, err := r.db.ExecContext(ctx, query, imageUrl, username)
 	return err

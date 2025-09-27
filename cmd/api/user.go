@@ -7,13 +7,15 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 
-	_ "image/gif" 
-	_ "image/jpeg" 
-	_ "image/png"  
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 )
 
 type UpdatePayload struct {
@@ -76,7 +78,7 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_,_, err = image.Decode(file)
+	_, _, err = image.Decode(file)
 
 	if err != nil {
 		badRequest(w, r, err)
@@ -85,7 +87,11 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 
 	defer file.Close()
 
-	destinationFile, err := os.Create("C:\\Users\\5557\\Desktop\\nkata_uploads\\profile" + fileHeader.Filename)
+	currentTime := time.Now().UnixMilli()
+
+	currentTimeString := strconv.Itoa(int(currentTime)) + filepath.Ext(fileHeader.Filename)
+
+	destinationFile, err := os.Create("C:\\Users\\5557\\Desktop\\nkata_uploads\\profile\\" + currentTimeString)
 
 	if err != nil {
 		internalServer(w, r, err)
@@ -94,6 +100,13 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 
 	defer destinationFile.Close()
 
+	_, err = file.Seek(0, io.SeekStart)
+	
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
 	_, err = io.Copy(destinationFile, file)
 
 	if err != nil {
@@ -101,9 +114,14 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	url := "localhost:5557/v1/media/profiles/" + fileHeader.Filename
+	url := "localhost:5557/v1/media/profiles/" + currentTimeString
 
-	api.userRpo.UpdateProfilePicUrl(ctx, username, url)
+	err = api.userRpo.UpdateProfilePicUrl(ctx, username, url)
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
 
 	s := StandardResponse{
 		Status:  http.StatusOK,
@@ -116,19 +134,21 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 func (api *ApiService) LoadProfilPic(w http.ResponseWriter, r *http.Request) {
 
 	filename := chi.URLParam(r, "img_name")
-	url := "C:\\Users\\5557\\Desktop\\nkata_uploads\\profile" + filename
+	url := "C:\\Users\\5557\\Desktop\\nkata_uploads\\profile\\" + filename
 	file, err := os.Open(url)
 
 	if err != nil {
 		notFound(w, r, err)
 		return
 	}
+
 	defer file.Close()
 
-	w.Header().Set("Content-Disposition", "attachment: "+filename)
+	w.Header().Set("Content-Disposition", "attachment; filename= "+filename)
 	w.Header().Set("Content-Type", "application/octet-stream")
 
-	http.ServeContent(w, r, filename, time.Now(), file)
+	http.ServeContent(w, r, filename, time.Time{}, file)
+	// http.ServeFile(w,r,url)
 }
 
 func (api *ApiService) Update(w http.ResponseWriter, r *http.Request) {
