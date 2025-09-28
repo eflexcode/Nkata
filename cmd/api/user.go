@@ -148,7 +148,6 @@ func (api *ApiService) LoadProfilPic(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/octet-stream")
 
 	http.ServeContent(w, r, filename, time.Time{}, file)
-	// http.ServeFile(w,r,url)
 }
 
 func (api *ApiService) Update(w http.ResponseWriter, r *http.Request) {

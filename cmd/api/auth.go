@@ -171,19 +171,15 @@ func (api *ApiService) SignInEmail(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (api *ApiService) VerifySignInEmailOtpEmail(w http.ResponseWriter, r *http.Request) {
+func (api *ApiService) VerifySignInEmailOtp(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (api *ApiService) SendResetPasswordOtpEmail(w http.ResponseWriter, r *http.Request) {
+func (api *ApiService) SendResetPasswordOtp(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (api *ApiService) VerifyResetPasswordOtpEmail(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func (api *ApiService) ResetPassword(w http.ResponseWriter, r *http.Request) {
+func (api *ApiService) VerifyResetPasswordOtp(w http.ResponseWriter, r *http.Request) {
 
 }
 

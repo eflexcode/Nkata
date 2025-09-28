@@ -12,10 +12,10 @@ import (
 )
 
 type ApiService struct {
-	userRpo *database.UserRepository
+	userRpo *database.DataRepository
 }
 
-func NewRepos(userRepo *database.UserRepository) *ApiService {
+func NewRepos(userRepo *database.DataRepository) *ApiService {
 	return &ApiService{userRpo: userRepo}
 }
 

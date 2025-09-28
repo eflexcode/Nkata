@@ -14,6 +14,14 @@ type DatabaseConfig struct {
 	MaxIdealTime string
 }
 
+type DataRepository struct {
+	db *sql.DB
+}
+
+func NewUserRepository(db *sql.DB) *DataRepository {
+	return &DataRepository{db: db}
+}
+
 func ConnectDatabase(databaseConfig DatabaseConfig) (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", databaseConfig.Addr)

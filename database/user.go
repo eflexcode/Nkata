@@ -34,15 +34,8 @@ type User struct {
 	ModifiedAt   string `json:"modified_at"`
 }
 
-type UserRepository struct {
-	db *sql.DB
-}
 
-func NewUserRepository(db *sql.DB) *UserRepository {
-	return &UserRepository{db: db}
-}
-
-func (r *UserRepository) CreateUser(ctx context.Context, user *User) error {
+func (r *DataRepository) CreateUser(ctx context.Context, user *User) error {
 
 	query := `INSERT INTO users (username,display_name,email,password,image_url,bio,is_online,friends_count,groups_count,role,enabled,modified_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`
 
@@ -62,7 +55,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *User) error {
 	return nil
 }
 
-func (r *UserRepository) GetByID(ctx context.Context, id int64) (*User, error) {
+func (r *DataRepository) GetUserByID(ctx context.Context, id int64) (*User, error) {
 
 	query := `SELECT id,username,display_name,email,password,image_url,bio,is_online,friends_count,groups_count,created_at,modified_at FROM users WHERE id = $1`
 
@@ -80,7 +73,7 @@ func (r *UserRepository) GetByID(ctx context.Context, id int64) (*User, error) {
 
 }
 
-func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*User, error) {
+func (r *DataRepository) GetByUsername(ctx context.Context, username string) (*User, error) {
 
 	query := `SELECT id,username,display_name,email,password,image_url,bio,is_online,friends_count,groups_count,created_at,modified_at FROM users WHERE username = $1`
 
@@ -98,7 +91,7 @@ func (r *UserRepository) GetByUsername(ctx context.Context, username string) (*U
 
 }
 
-func (r *UserRepository) Update(ctx context.Context, username, displayName, bio string) error {
+func (r *DataRepository) Update(ctx context.Context, username, displayName, bio string) error {
 
 	queryBoth := `UPDATE users SET display_name = $1, bio =$2 WHERE username = $3?`
 	queryBio := `UPDATE users SET bio = $1 WHERE username = $2`
@@ -129,7 +122,7 @@ func (r *UserRepository) Update(ctx context.Context, username, displayName, bio 
 
 }
 
-func (r *UserRepository) UpdateProfilePicUrl(ctx context.Context, username, imageUrl string) error {
+func (r *DataRepository) UpdateProfilePicUrl(ctx context.Context, username, imageUrl string) error {
 
 	query := `UPDATE users SET image_url = $1 WHERE username = $2`
 
@@ -138,7 +131,7 @@ func (r *UserRepository) UpdateProfilePicUrl(ctx context.Context, username, imag
 
 }
 
-func (r *UserRepository) CheackUsernameAvailability(ctx context.Context, username string) bool {
+func (r *DataRepository) CheackUsernameAvailability(ctx context.Context, username string) bool {
 
 	query := `SELECT username FROM users WHERE username = $1`
 	row := r.db.QueryRowContext(ctx, query, username)
