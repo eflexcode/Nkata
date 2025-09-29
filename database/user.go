@@ -34,7 +34,6 @@ type User struct {
 	ModifiedAt   string `json:"modified_at"`
 }
 
-
 func (r *DataRepository) CreateUser(ctx context.Context, user *User) error {
 
 	query := `INSERT INTO users (username,display_name,email,password,image_url,bio,is_online,friends_count,groups_count,role,enabled,modified_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`
@@ -73,6 +72,24 @@ func (r *DataRepository) GetUserByID(ctx context.Context, id int64) (*User, erro
 
 }
 
+func (r *DataRepository) GetUserByEmail(ctx context.Context, email string) (*User, error) {
+
+	query := `SELECT id,username,display_name,email,password,image_url,bio,is_online,friends_count,groups_count,created_at,modified_at FROM users WHERE email = $1`
+
+	row := r.db.QueryRowContext(ctx, query, email)
+
+	var user User
+
+	err := row.Scan(&user.ID, &user.Username, &user.DisplayName, &user.Email, &user.Password, &user.ImageUrl, &user.Bio, &user.IsOnline, &user.FriendsCount, &user.GroupsCount, &user.CreatedAt, &user.ModifiedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+
+}
+
 func (r *DataRepository) GetByUsername(ctx context.Context, username string) (*User, error) {
 
 	query := `SELECT id,username,display_name,email,password,image_url,bio,is_online,friends_count,groups_count,created_at,modified_at FROM users WHERE username = $1`
@@ -91,7 +108,7 @@ func (r *DataRepository) GetByUsername(ctx context.Context, username string) (*U
 
 }
 
-func (r *DataRepository) Update(ctx context.Context, username, displayName, bio string) error {
+func (r *DataRepository) UpdateUser(ctx context.Context, username, displayName, bio string) error {
 
 	queryBoth := `UPDATE users SET display_name = $1, bio =$2 WHERE username = $3?`
 	queryBio := `UPDATE users SET bio = $1 WHERE username = $2`
@@ -119,6 +136,16 @@ func (r *DataRepository) Update(ctx context.Context, username, displayName, bio 
 		return nil
 	}
 	return errors.New("display_name and bio cannot both be empty")
+
+}
+
+func (r *DataRepository) UpdateUserEmail(ctx context.Context, username, email string) error {
+
+	query := `UPDATE users SET email = $1 WHERE username = $2`
+
+	_, err := r.db.ExecContext(ctx, query, email, username)
+
+	return err
 
 }
 

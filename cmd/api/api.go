@@ -12,11 +12,11 @@ import (
 )
 
 type ApiService struct {
-	userRpo *database.DataRepository
+	database *database.DataRepository
 }
 
 func NewRepos(userRepo *database.DataRepository) *ApiService {
-	return &ApiService{userRpo: userRepo}
+	return &ApiService{database: userRepo}
 }
 
 func IntiApi(db *sql.DB) {

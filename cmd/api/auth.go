@@ -5,7 +5,9 @@ import (
 	"errors"
 	"main/database"
 	"main/internal/evn"
+	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -28,7 +30,7 @@ type LoginEmailePayload struct {
 	Password string `json:"password"`
 }
 
-type OptPayload struct {
+type OtpPayloadLogin struct {
 	Email string `json:"email"`
 	Otp   int    `json:"otp"`
 }
@@ -48,6 +50,14 @@ type JwtJson struct {
 type EmailPayload struct {
 	Email string `json:"email"`
 }
+
+type OtpPayload struct {
+	Otp int64 `json:"otp"`
+}
+
+var otpPurposeLogin string = "Login"
+var otpPurposeResetPassword string = "Reset"
+var otpPurposeAddEmail string = "AddEmail"
 
 func (apiService *ApiService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
@@ -78,7 +88,7 @@ func (apiService *ApiService) RegisterUser(w http.ResponseWriter, r *http.Reques
 
 	ctx := r.Context()
 
-	err := apiService.userRpo.CreateUser(ctx, user)
+	err := apiService.database.CreateUser(ctx, user)
 
 	if err != nil {
 
@@ -111,7 +121,7 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 
 	ctx := r.Context()
 
-	user, err := apiService.userRpo.GetByUsername(ctx, payload.Username)
+	user, err := apiService.database.GetByUsername(ctx, payload.Username)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -130,7 +140,6 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 	}
 
 	claims := jwt.MapClaims{
-
 		"username": user.Username,
 		"exp":      time.Now().Add(time.Hour * 48).Unix(),
 	}
@@ -153,26 +162,105 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 	writeJson(w, http.StatusAccepted, tokenResponse)
 }
 
-func (api *ApiService) AddEmail(w http.ResponseWriter, r *http.Request) {
+// sign in with email must verify email
+func (api *ApiService) SignInEmail(w http.ResponseWriter, r *http.Request) {
 
-	var emailp EmailPayload
+	var payload LoginEmailePayload
 
-	if err := readJson(w, r, &emailp); err != nil {
+	if err := readJson(w, r, &payload); err != nil {
 		badRequest(w, r, err)
 		return
 	}
 
-	// ctx = r.Context()
+	ctx := r.Context()
 
-}
+	user, err := api.database.GetUserByEmail(ctx, payload.Email)
 
-// sign in with email must verify email
-func (api *ApiService) SignInEmail(w http.ResponseWriter, r *http.Request) {
+	if err != nil {
+		if err == sql.ErrNoRows {
+			unauthorized(w, r, err)
+			return
+		}
+		internalServer(w, r, errors.New("somthing went wrong"))
+		return
+	}
+
+	//send email with your smtp provider
+	otpToken := rand.Intn(9000000) + 100000
+
+	err = api.database.InsertOtp(ctx, user.Username, user.Email, otpPurposeLogin, int64(otpToken))
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	s := StandardResponse{
+		Status:  http.StatusOK,
+		Message: "otp " + strconv.Itoa(otpToken) + " sent to " + user.Email,
+	}
+
+	writeJson(w, http.StatusOK, s)
 
 }
 
 func (api *ApiService) VerifySignInEmailOtp(w http.ResponseWriter, r *http.Request) {
 
+	var payload OtpPayloadLogin
+
+	if err := readJson(w, r, &payload); err != nil {
+		badRequest(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	otp, err := api.database.GetOtp(ctx, int64(payload.Otp))
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	if otp.Purpose != otpPurposeLogin || otp.Username != payload.Email {
+		unauthorized(w, r, errors.New("user does not have permission to perform this action"))
+		return
+	}
+
+	now := time.Now()
+	exp, err := time.Parse(time.RFC1123Z, otp.Exp)
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	if now.After(exp) {
+		unauthorized(w, r, errors.New("otp expired"))
+		return
+	}
+
+	claims := jwt.MapClaims{
+		"username": otp.Username,
+		"exp":      time.Now().Add(time.Hour * 48).Unix(),
+	}
+
+	var secret_words string = "A request for a long text message: Search results showIf this is your intent, please clarify the context and what you want the text to be about."
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	secret := evn.GetString(secret_words, "JWT_SERECT")
+
+	tokenString, err := token.SignedString([]byte(secret))
+
+	if err != nil {
+		err := errors.New("failed to generate token")
+		internalServer(w, r, err)
+		return
+	}
+
+	tokenResponse := JwtJson{Token: tokenString}
+
+	writeJson(w, http.StatusAccepted, tokenResponse)
 }
 
 func (api *ApiService) SendResetPasswordOtp(w http.ResponseWriter, r *http.Request) {
@@ -193,7 +281,7 @@ func (apiService *ApiService) CheackUsernameAvailability(w http.ResponseWriter, 
 	}
 
 	ctx := r.Context()
-	exist := apiService.userRpo.CheackUsernameAvailability(ctx, payload.Username)
+	exist := apiService.database.CheackUsernameAvailability(ctx, payload.Username)
 
 	returnPayload := BoolPayload{
 		Exist: exist,
