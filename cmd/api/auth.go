@@ -35,6 +35,12 @@ type OtpPayloadLogin struct {
 	Otp   int    `json:"otp"`
 }
 
+type OtpPayloadReset struct {
+	Email    string `json:"email"`
+	Otp      int    `json:"otp"`
+	Password string `json:"password"`
+}
+
 type UsernamePayload struct {
 	Username string `json:"username"`
 }
@@ -218,12 +224,12 @@ func (api *ApiService) VerifySignInEmailOtp(w http.ResponseWriter, r *http.Reque
 	otp, err := api.database.GetOtp(ctx, int64(payload.Otp))
 
 	if err != nil {
-		internalServer(w, r, err)
+		unauthorized(w, r, errors.New("otp is invalid"))
 		return
 	}
 
-	if otp.Purpose != otpPurposeLogin || otp.Username != payload.Email {
-		unauthorized(w, r, errors.New("user does not have permission to perform this action"))
+	if otp.Purpose != otpPurposeLogin || otp.Email != payload.Email {
+		unauthorized(w, r, errors.New("otp is invalid"))
 		return
 	}
 
@@ -235,7 +241,7 @@ func (api *ApiService) VerifySignInEmailOtp(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if now.After(exp) {
+	if exp.Before(now) {
 		unauthorized(w, r, errors.New("otp expired"))
 		return
 	}
@@ -265,10 +271,98 @@ func (api *ApiService) VerifySignInEmailOtp(w http.ResponseWriter, r *http.Reque
 
 func (api *ApiService) SendResetPasswordOtp(w http.ResponseWriter, r *http.Request) {
 
+	var payload EmailPayload
+
+	if err := readJson(w, r, &payload); err != nil {
+		badRequest(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	user, err := api.database.GetUserByEmail(ctx, payload.Email)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			unauthorized(w, r, err)
+			return
+		}
+		internalServer(w, r, errors.New("somthing went wrong"))
+		return
+	}
+
+	//send email with your smtp provider
+	otpToken := rand.Intn(9000000) + 100000
+
+	err = api.database.InsertOtp(ctx, user.Username, user.Email, otpPurposeResetPassword, int64(otpToken))
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	s := StandardResponse{
+		Status:  http.StatusOK,
+		Message: "otp " + strconv.Itoa(otpToken) + " sent to " + user.Email,
+	}
+
+	writeJson(w, http.StatusOK, s)
+
 }
 
 func (api *ApiService) VerifyResetPasswordOtp(w http.ResponseWriter, r *http.Request) {
 
+	var payload OtpPayloadReset
+
+	if err := readJson(w, r, &payload); err != nil {
+		badRequest(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	otp, err := api.database.GetOtp(ctx, int64(payload.Otp))
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			unauthorized(w, r, err)
+			return
+		}
+		internalServer(w, r, errors.New("somthing went wrong"))
+		return
+	}
+
+	if otp.Email != payload.Email || otp.Purpose != otpPurposeResetPassword {
+		unauthorized(w, r, err)
+		return
+	}
+
+	now := time.Now()
+	exp, err := time.Parse(time.RFC1123Z, otp.Exp)
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	if exp.Before(now) {
+		unauthorized(w, r, errors.New("otp expired"))
+		return
+	}
+
+	err = api.database.UpdateUserPassword(ctx, payload.Password, otp.Email)
+	
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	s := StandardResponse{
+		Status:  http.StatusOK,
+		Message: "password reset succefully procced to login",
+	}
+
+	writeJson(w, http.StatusOK, s)
 }
 
 func (apiService *ApiService) CheackUsernameAvailability(w http.ResponseWriter, r *http.Request) {

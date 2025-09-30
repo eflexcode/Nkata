@@ -158,6 +158,21 @@ func (r *DataRepository) UpdateProfilePicUrl(ctx context.Context, username, imag
 
 }
 
+func (r *DataRepository) UpdateUserPassword(ctx context.Context, password, email string) error {
+
+	query := `UPDATE users SET password = $1 WHERE email = $2`
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	if err != nil {
+		return errors.New("error hashing user password")
+	}
+
+	_, err = r.db.ExecContext(ctx, query, string(hashedPassword), email)
+	return err
+
+}
+
 func (r *DataRepository) CheackUsernameAvailability(ctx context.Context, username string) bool {
 
 	query := `SELECT username FROM users WHERE username = $1`

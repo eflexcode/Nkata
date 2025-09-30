@@ -264,7 +264,7 @@ func (api *ApiService) AddEmailVerify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if now.After(exp) {
+	if exp.Before(now) {
 		unauthorized(w, r, errors.New("otp expired"))
 		return
 	}
