@@ -65,6 +65,12 @@ var otpPurposeLogin string = "Login"
 var otpPurposeResetPassword string = "Reset"
 var otpPurposeAddEmail string = "AddEmail"
 
+// RegisterUser
+// @Summary Sign-up
+// @Description Responds with json
+// @Tags auth
+// @Success 200 {object} object 
+// @Router /auth/sign-up [post]
 func (apiService *ApiService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	var payload RegisterUserPayload
@@ -351,7 +357,7 @@ func (api *ApiService) VerifyResetPasswordOtp(w http.ResponseWriter, r *http.Req
 	}
 
 	err = api.database.UpdateUserPassword(ctx, payload.Password, otp.Email)
-	
+
 	if err != nil {
 		internalServer(w, r, err)
 		return

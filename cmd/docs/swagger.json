@@ -1,0 +1,30 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Nkata monolight server",
+        "title": "Nkata API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:5557",
+    "basePath": "/v1",
+    "paths": {
+        "/auth/sign-up": {
+            "post": {
+                "description": "Responds with json",
+                "tags": [
+                    "example"
+                ],
+                "summary": "Sign-up",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -9,6 +9,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
+	_ "main/cmd/docs"
 )
 
 type ApiService struct {
@@ -19,6 +21,11 @@ func NewRepos(userRepo *database.DataRepository) *ApiService {
 	return &ApiService{database: userRepo}
 }
 
+// @title Example API
+// @version 1.0
+// @description This is a sample server using Chi and Swagger.
+// @host localhost:8080
+// @BasePath /api/v1
 func IntiApi(db *sql.DB) {
 
 	r := chi.NewRouter()
@@ -35,24 +42,29 @@ func IntiApi(db *sql.DB) {
 
 	r.Route("/v1", func(r chi.Router) {
 
-		r.Get("/ping",func(w http.ResponseWriter, r *http.Request) {
+		r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 
-			type ping struct{
+			type ping struct {
 				Message string `json:"message"`
-			} 
+			}
 
-			writeJson(w,http.StatusOK,ping{Message: "pined"})
+			writeJson(w, http.StatusOK, ping{Message: "pined"})
 		})
+		
+		r.Get("/swagger/*", httpSwagger.WrapHandler)
+		// r.Get("/swagger/*", httpSwagger.Handler(
+		// 	httpSwagger.URL("http://localhost:5557/v1/swagger/doc.json"), 
+		// ))
 
-		r.Route("/user",func(r chi.Router) {
+		r.Route("/user", func(r chi.Router) {
 			r.Use(HandleJWTAuth)
-			r.Get("/",apiService.GetByUsername)
-			r.Put("/update",apiService.Update)
-			r.Post("/upload-profile-picture",apiService.UploadProfilPic)
+			r.Get("/", apiService.GetByUsername)
+			r.Put("/update", apiService.Update)
+			r.Post("/upload-profile-picture", apiService.UploadProfilPic)
 		})
 
-		r.Route("/media",func(r chi.Router) {
-			r.Get("/profiles/{img_name}",apiService.LoadProfilPic)
+		r.Route("/media", func(r chi.Router) {
+			r.Get("/profiles/{img_name}", apiService.LoadProfilPic)
 		})
 
 		r.Route("/auth", func(r chi.Router) {
@@ -75,12 +87,10 @@ func IntiApi(db *sql.DB) {
 
 	log.Printf("Nkata server started on port: 5557")
 
-	err:= http.ListenAndServe(":5557", r)
+	err := http.ListenAndServe(":5557", r)
 
 	if err != nil {
 		log.Printf("Nkata server failed to start")
 	}
 
-	
-	
 }

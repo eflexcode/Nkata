@@ -1,0 +1,20 @@
+basePath: /v1
+host: localhost:5557
+info:
+  contact: {}
+  description: Nkata monolight server
+  title: Nkata API
+  version: "1.0"
+paths:
+  /auth/sign-up:
+    post:
+      description: Responds with json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: Sign-up
+      tags:
+      - example
+swagger: "2.0"
