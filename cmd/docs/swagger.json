@@ -7,22 +7,804 @@
         "version": "1.0"
     },
     "host": "localhost:5557",
-    "basePath": "/v1",
     "paths": {
-        "/auth/sign-up": {
+        "/v1/auth/check-username": {
             "post": {
-                "description": "Responds with json",
-                "tags": [
-                    "example"
+                "description": "Cheack Username Availability",
+                "consumes": [
+                    "application/json"
                 ],
-                "summary": "Sign-up",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Cheack Username Availability",
+                "parameters": [
+                    {
+                        "description": "User credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.UsernamePayload"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/api.BoolPayload"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
                         }
                     }
+                }
+            }
+        },
+        "/v1/auth/reset-password": {
+            "post": {
+                "description": "Send otp email if exist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Reset Password",
+                "parameters": [
+                    {
+                        "description": "User sign-in credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.EmailPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.StandardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/reset-password-verify": {
+            "post": {
+                "description": "Send otp email if exist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Reset Password",
+                "parameters": [
+                    {
+                        "description": "User credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.OtpPayloadReset"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.StandardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/sign-in-with-email": {
+            "post": {
+                "description": "Send otp to email use the otp at the verify endpoint to get your token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Sign-in with Email",
+                "parameters": [
+                    {
+                        "description": "User sign-in credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.LoginEmailePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.StandardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/sign-in-with-email-verify": {
+            "post": {
+                "description": "Send otp token to get jwt",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Sign-in with Email Otp",
+                "parameters": [
+                    {
+                        "description": "User sign-in credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.OtpPayloadLogin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.JwtJson"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/sign-in-with-username": {
+            "post": {
+                "description": "Responds with json",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Sign-in with username",
+                "parameters": [
+                    {
+                        "description": "User sign-in credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.LoginUsernamePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.JwtJson"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/sign-up": {
+            "post": {
+                "description": "Responds with json",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Sign-up",
+                "parameters": [
+                    {
+                        "description": "User credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.RegisterUserPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.StandardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/media/profiles/{img_name}": {
+            "get": {
+                "description": "Responds with json",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Media"
+                ],
+                "summary": "Download Profil Pic",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file name",
+                        "name": "img_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Responds with json",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get-user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user//add-email-verify": {
+            "post": {
+                "description": "Responds with json",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Send otp sent to email",
+                "parameters": [
+                    {
+                        "description": "valid otp",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.OtpPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.StandardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/add-email": {
+            "post": {
+                "description": "Responds with json",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Add email to user. endpoint sends otp",
+                "parameters": [
+                    {
+                        "description": "valid email",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.EmailPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.StandardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/update": {
+            "put": {
+                "description": "Responds with json",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user display_name or bio",
+                "parameters": [
+                    {
+                        "description": "you can sent both or either",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.UpdatePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.StandardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/upload-profile-picture": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Responds with json",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Upload Profil Pic",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "upload send png jpeg and gif",
+                        "name": "img",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.StandardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.BoolPayload": {
+            "type": "object",
+            "properties": {
+                "exist": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "api.EmailPayload": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.JwtJson": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.LoginEmailePayload": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.LoginUsernamePayload": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.OtpPayload": {
+            "type": "object",
+            "properties": {
+                "otp": {
+                    "type": "integer"
+                }
+            }
+        },
+        "api.OtpPayloadLogin": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "otp": {
+                    "type": "integer"
+                }
+            }
+        },
+        "api.OtpPayloadReset": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "otp": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.RegisterUserPayload": {
+            "type": "object",
+            "properties": {
+                "display_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.StandardResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "api.UpdatePayload": {
+            "type": "object",
+            "properties": {
+                "bio": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.UsernamePayload": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.errorslope": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.User": {
+            "type": "object",
+            "properties": {
+                "_": {
+                    "type": "boolean"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "friends_count": {
+                    "type": "integer"
+                },
+                "groups_count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "is_online": {
+                    "type": "boolean"
+                },
+                "modified_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         }

@@ -40,6 +40,16 @@ func (api *ApiService) GetByID(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// GetUser
+// @Summary Get-user
+// @Description Responds with json
+// @Tags User
+// @Produce json
+// @Success 200 {object} database.User
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Security ApiKeyAuth
+// @Router /v1/user/ [get]
 func (api *ApiService) GetByUsername(w http.ResponseWriter, r *http.Request) {
 
 	username, err := getUsernameFromCtx(r.Context())
@@ -60,8 +70,20 @@ func (api *ApiService) GetByUsername(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// UploadProfilPic
+// @Summary Upload Profil Pic
+// @Description Responds with json
+// @Tags User
+// @Accept multipart/form-data
+// @Produce json
+// @Param img formData file true "upload send png jpeg and gif"
+// @Success 200 {object} StandardResponse
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Security ApiKeyAuth
+// @Router /v1/user/upload-profile-picture [post]
 func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
-
+	
 	ctx := r.Context()
 	username, err := getUsernameFromCtx(ctx)
 
@@ -132,6 +154,15 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 	writeJson(w, http.StatusOK, s)
 }
 
+// LoadProfilPic
+// @Summary Download Profil Pic
+// @Description Responds with json
+// @Tags Media
+// @Param img_name path string true "file name"
+// @Produce octet-stream
+// @Success 200 {file} file
+// @Failure 404 {object} errorslope
+// @Router /v1/media/profiles/{img_name} [get]
 func (api *ApiService) LoadProfilPic(w http.ResponseWriter, r *http.Request) {
 
 	filename := chi.URLParam(r, "img_name")
@@ -139,7 +170,7 @@ func (api *ApiService) LoadProfilPic(w http.ResponseWriter, r *http.Request) {
 	file, err := os.Open(url)
 
 	if err != nil {
-		notFound(w, r, err)
+		notFound(w, r, errors.New("the system cannot find the file specified"))
 		return
 	}
 
@@ -151,6 +182,18 @@ func (api *ApiService) LoadProfilPic(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, filename, time.Time{}, file)
 }
 
+// Update
+// @Summary Update user display_name or bio
+// @Description Responds with json
+// @Tags User
+// @Param payload body UpdatePayload true "you can sent both or either"
+// @Produce json
+// @Accept json
+// @Success 200 {object} StandardResponse
+// @Failure 404 {object} errorslope
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/user/update [put]
 func (api *ApiService) Update(w http.ResponseWriter, r *http.Request) {
 
 	var update UpdatePayload
@@ -183,6 +226,18 @@ func (api *ApiService) Update(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// AddEmdil
+// @Summary Add email to user. endpoint sends otp
+// @Description Responds with json
+// @Tags User
+// @Param payload body EmailPayload true "valid email"
+// @Produce json
+// @Accept json
+// @Success 200 {object} StandardResponse
+// @Failure 404 {object} errorslope
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/user/add-email [post]
 func (api *ApiService) AddEmail(w http.ResponseWriter, r *http.Request) {
 
 	username, err := getUsernameFromCtx(r.Context())
@@ -221,6 +276,18 @@ func (api *ApiService) AddEmail(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// AddEmailVerify
+// @Summary Send otp sent to email
+// @Description Responds with json
+// @Tags User
+// @Param payload body OtpPayload true "valid otp"
+// @Produce json
+// @Accept json
+// @Success 200 {object} StandardResponse
+// @Failure 404 {object} errorslope
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/user//add-email-verify [post]
 func (api *ApiService) AddEmailVerify(w http.ResponseWriter, r *http.Request) {
 
 	username, err := getUsernameFromCtx(r.Context())
@@ -274,5 +341,12 @@ func (api *ApiService) AddEmailVerify(w http.ResponseWriter, r *http.Request) {
 		internalServer(w, r, err)
 		return
 	}
+
+	s := StandardResponse{
+		Status:  http.StatusOK,
+		Message: "Email updated succesfully",
+	}
+
+	writeJson(w, http.StatusOK, s)
 
 }

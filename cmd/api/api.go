@@ -50,16 +50,18 @@ func IntiApi(db *sql.DB) {
 
 			writeJson(w, http.StatusOK, ping{Message: "pined"})
 		})
-		
+
 		r.Get("/swagger/*", httpSwagger.WrapHandler)
 		// r.Get("/swagger/*", httpSwagger.Handler(
-		// 	httpSwagger.URL("http://localhost:5557/v1/swagger/doc.json"), 
+		// 	httpSwagger.URL("http://localhost:5557/v1/swagger/doc.json"),
 		// ))
 
 		r.Route("/user", func(r chi.Router) {
 			r.Use(HandleJWTAuth)
 			r.Get("/", apiService.GetByUsername)
 			r.Put("/update", apiService.Update)
+			r.Put("/add-email", apiService.AddEmail)
+			r.Post("/add-email-verify", apiService.AddEmailVerify)
 			r.Post("/upload-profile-picture", apiService.UploadProfilPic)
 		})
 
@@ -70,6 +72,10 @@ func IntiApi(db *sql.DB) {
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/sign-up", apiService.RegisterUser)
 			r.Post("/sign-in-with-username", apiService.SignInUsername)
+			r.Post("/sign-in-with-email", apiService.SignInEmail)
+			r.Post("/sign-in-with-email-verify", apiService.VerifySignInEmailOtp)
+			r.Post("/reset-password", apiService.SendResetPasswordOtp)
+			r.Post("/reset-password-verify", apiService.VerifyResetPasswordOtp)
 			r.Get("/check-username", apiService.CheackUsernameAvailability)
 		})
 

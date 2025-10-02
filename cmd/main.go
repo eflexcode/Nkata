@@ -12,7 +12,7 @@ import (
 // @version 1.0
 // @description Nkata monolight server
 // @host localhost:5557
-// @BasePath /v1
+// @BasePath 
 func main() {
 
 	if err := evn.InitEvn(); err != nil {

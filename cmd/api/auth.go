@@ -68,9 +68,14 @@ var otpPurposeAddEmail string = "AddEmail"
 // RegisterUser
 // @Summary Sign-up
 // @Description Responds with json
-// @Tags auth
-// @Success 200 {object} object 
-// @Router /auth/sign-up [post]
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param payload body RegisterUserPayload true "User credentials"
+// @Success 200 {object} StandardResponse
+// @Failure 400  {object} errorslope
+// @Failure 500  {object} errorslope
+// @Router /v1/auth/sign-up [post]
 func (apiService *ApiService) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	var payload RegisterUserPayload
@@ -122,6 +127,18 @@ func (apiService *ApiService) RegisterUser(w http.ResponseWriter, r *http.Reques
 	writeJson(w, http.StatusCreated, s)
 }
 
+// Sign in
+// @Summary Sign-in with username
+// @Description Responds with json
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param payload body LoginUsernamePayload true "User sign-in credentials"
+// @Success 200 {object} JwtJson
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Failure 401 {object} errorslope
+// @Router /v1/auth/sign-in-with-username [post]
 func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Request) {
 
 	var payload LoginUsernamePayload
@@ -175,6 +192,19 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 }
 
 // sign in with email must verify email
+
+// Sign in Email
+// @Summary Sign-in with Email 
+// @Description Send otp to email use the otp at the verify endpoint to get your token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param payload body LoginEmailePayload true "User sign-in credentials"
+// @Success 200 {object} StandardResponse
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Failure 401 {object} errorslope
+// @Router /v1/auth/sign-in-with-email [post]
 func (api *ApiService) SignInEmail(w http.ResponseWriter, r *http.Request) {
 
 	var payload LoginEmailePayload
@@ -216,6 +246,18 @@ func (api *ApiService) SignInEmail(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// Sign in Email
+// @Summary Sign-in with Email Otp 
+// @Description Send otp token to get jwt
+// @Tags Auth
+// @Accept json
+// @Produce json 
+// @Param payload body OtpPayloadLogin true "User sign-in credentials"
+// @Success 200 {object} JwtJson
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Failure 401 {object} errorslope
+// @Router /v1/auth/sign-in-with-email-verify [post]
 func (api *ApiService) VerifySignInEmailOtp(w http.ResponseWriter, r *http.Request) {
 
 	var payload OtpPayloadLogin
@@ -275,6 +317,18 @@ func (api *ApiService) VerifySignInEmailOtp(w http.ResponseWriter, r *http.Reque
 	writeJson(w, http.StatusAccepted, tokenResponse)
 }
 
+// ResetPassword
+// @Summary Reset Password  
+// @Description Send otp email if exist
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param payload body EmailPayload true "User sign-in credentials"
+// @Success 200 {object} StandardResponse
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Failure 401 {object} errorslope
+// @Router /v1/auth/reset-password [post]
 func (api *ApiService) SendResetPasswordOtp(w http.ResponseWriter, r *http.Request) {
 
 	var payload EmailPayload
@@ -316,6 +370,18 @@ func (api *ApiService) SendResetPasswordOtp(w http.ResponseWriter, r *http.Reque
 
 }
 
+// ResetPassword
+// @Summary  Verify Reset Password  otp
+// @Description Send otp email if exist
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param payload body OtpPayloadReset true "User credentials"
+// @Success 200 {object} StandardResponse
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Failure 401 {object} errorslope
+// @Router /v1/auth/reset-password-verify [post]
 func (api *ApiService) VerifyResetPasswordOtp(w http.ResponseWriter, r *http.Request) {
 
 	var payload OtpPayloadReset
@@ -371,6 +437,16 @@ func (api *ApiService) VerifyResetPasswordOtp(w http.ResponseWriter, r *http.Req
 	writeJson(w, http.StatusOK, s)
 }
 
+// CheackUsernameAvailability
+// @Summary Cheack Username Availability 
+// @Description Cheack Username Availability
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param payload body UsernamePayload true "User credentials"
+// @Success 200 {object} BoolPayload
+// @Failure 400 {object} errorslope
+// @Router /v1/auth/check-username [post]
 func (apiService *ApiService) CheackUsernameAvailability(w http.ResponseWriter, r *http.Request) {
 
 	var payload UsernamePayload

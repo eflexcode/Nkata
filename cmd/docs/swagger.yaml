@@ -1,4 +1,116 @@
-basePath: /v1
+definitions:
+  api.BoolPayload:
+    properties:
+      exist:
+        type: boolean
+    type: object
+  api.EmailPayload:
+    properties:
+      email:
+        type: string
+    type: object
+  api.JwtJson:
+    properties:
+      token:
+        type: string
+    type: object
+  api.LoginEmailePayload:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  api.LoginUsernamePayload:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  api.OtpPayload:
+    properties:
+      otp:
+        type: integer
+    type: object
+  api.OtpPayloadLogin:
+    properties:
+      email:
+        type: string
+      otp:
+        type: integer
+    type: object
+  api.OtpPayloadReset:
+    properties:
+      email:
+        type: string
+      otp:
+        type: integer
+      password:
+        type: string
+    type: object
+  api.RegisterUserPayload:
+    properties:
+      display_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  api.StandardResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  api.UpdatePayload:
+    properties:
+      bio:
+        type: string
+      display_name:
+        type: string
+    type: object
+  api.UsernamePayload:
+    properties:
+      username:
+        type: string
+    type: object
+  api.errorslope:
+    properties:
+      error:
+        type: string
+      status:
+        type: integer
+    type: object
+  database.User:
+    properties:
+      _:
+        type: boolean
+      bio:
+        type: string
+      created_at:
+        type: string
+      display_name:
+        type: string
+      email:
+        type: string
+      friends_count:
+        type: integer
+      groups_count:
+        type: integer
+      id:
+        type: integer
+      image_url:
+        type: string
+      is_online:
+        type: boolean
+      modified_at:
+        type: string
+      username:
+        type: string
+    type: object
 host: localhost:5557
 info:
   contact: {}
@@ -6,15 +118,410 @@ info:
   title: Nkata API
   version: "1.0"
 paths:
-  /auth/sign-up:
+  /v1/auth/check-username:
     post:
-      description: Responds with json
+      consumes:
+      - application/json
+      description: Cheack Username Availability
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.UsernamePayload'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: object
+            $ref: '#/definitions/api.BoolPayload'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Cheack Username Availability
+      tags:
+      - Auth
+  /v1/auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Send otp email if exist
+      parameters:
+      - description: User sign-in credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.EmailPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Reset Password
+      tags:
+      - Auth
+  /v1/auth/reset-password-verify:
+    post:
+      consumes:
+      - application/json
+      description: Send otp email if exist
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.OtpPayloadReset'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Reset Password
+      tags:
+      - Auth
+  /v1/auth/sign-in-with-email:
+    post:
+      consumes:
+      - application/json
+      description: Send otp to email use the otp at the verify endpoint to get your
+        token
+      parameters:
+      - description: User sign-in credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.LoginEmailePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Sign-in with Email
+      tags:
+      - Auth
+  /v1/auth/sign-in-with-email-verify:
+    post:
+      consumes:
+      - application/json
+      description: Send otp token to get jwt
+      parameters:
+      - description: User sign-in credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.OtpPayloadLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.JwtJson'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Sign-in with Email Otp
+      tags:
+      - Auth
+  /v1/auth/sign-in-with-username:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: User sign-in credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.LoginUsernamePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.JwtJson'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Sign-in with username
+      tags:
+      - Auth
+  /v1/auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.RegisterUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
       summary: Sign-up
       tags:
-      - example
+      - Auth
+  /v1/media/profiles/{img_name}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: file name
+        in: path
+        name: img_name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Download Profil Pic
+      tags:
+      - Media
+  /v1/user/:
+    get:
+      description: Responds with json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      security:
+      - ApiKeyAuth: []
+      summary: Get-user
+      tags:
+      - User
+  /v1/user//add-email-verify:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: valid otp
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.OtpPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Send otp sent to email
+      tags:
+      - User
+  /v1/user/add-email:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: valid email
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.EmailPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Add email to user. endpoint sends otp
+      tags:
+      - User
+  /v1/user/update:
+    put:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: you can sent both or either
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdatePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Update user display_name or bio
+      tags:
+      - User
+  /v1/user/upload-profile-picture:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Responds with json
+      parameters:
+      - description: upload send png jpeg and gif
+        in: formData
+        name: img
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload Profil Pic
+      tags:
+      - User
 swagger: "2.0"

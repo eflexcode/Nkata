@@ -10,6 +10,11 @@ type StandardResponse struct {
 	Message string `json:"message"`
 }
 
+type errorslope struct {
+		Error  string `json:"error"`
+		Status int    `json:"status"`
+	}
+
 func writeJson(w http.ResponseWriter, status int, data any) error {
 
 	w.Header().Set("Content-Type", "application/json")
@@ -30,11 +35,5 @@ func readJson(w http.ResponseWriter, r *http.Request, data any) error {
 }
 
 func errorResponse(w http.ResponseWriter, status int, message string) error {
-
-	type errorslope struct {
-		Error  string `json:"error"`
-		Status int    `json:"status"`
-	}
-
 	return writeJson(w, status, &errorslope{Error: message, Status: status})
 }
