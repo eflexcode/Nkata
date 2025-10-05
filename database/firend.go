@@ -31,13 +31,25 @@ func (r *DataRepository) InsertFriendRequest(ctx context.Context, sentTo, sentBy
 }
 
 // request i (client) sent out
-func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentBy int64) ([]FriendRequest, error) {
+func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentBy, page, limit int64) (*PaginatedResponse, error) {
 
 	var request []FriendRequest
 
-	query := `SELECT * FROM friendRequest WHERE sent_by = $1 AND status = $2`
+	query := `SELECT * FROM friendRequest WHERE sent_by = $1 AND status = $2 LIMIT = $3 OFFSET = $4`
+	queryCount := `SELECT COUNT(*) FROM friendRequest WHERE sent_by = $1 AND status = $2`
 
-	row, err := r.db.Query(query, sentBy, "pending")
+	var totalCount int
+
+	cRow := r.db.QueryRowContext(ctx, queryCount, sentBy, "pending")
+
+	err := cRow.Scan(&totalCount)
+	if err != nil {
+		return nil, err
+	}
+
+	offset := (page - 1) * limit
+
+	row, err := r.db.Query(query, sentBy, "pending", limit, offset)
 
 	if err != nil {
 		return nil, err
@@ -59,16 +71,36 @@ func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentBy int6
 
 	}
 
-	return request, nil
+	p := PaginatedResponse{
+		Data: request,
+		TotalCount: totalCount,
+		Page: int(page),
+		Limit: int(limit),
+	}
+
+	return &p, nil
 }
 
 // request i (client) was sent
-func (r *DataRepository) GetFriendRequestSentTo(ctx context.Context, sentTo int64) ([]FriendRequest, error) {
+func (r *DataRepository) GetFriendRequestSentTo(ctx context.Context, sentTo, page, limit int64) (*PaginatedResponse, error) {
+
 	var request []FriendRequest
 
-	query := `SELECT * FROM friendRequest WHERE sent_to = $1 AND status = $2`
+	query := `SELECT * FROM friendRequest WHERE sent_to = $1 AND status = $2 LIMIT = $3 OFFSET = $4`
+	queryCount := `SELECT COUNT(*) FROM friendRequest WHERE sent_to = $1 AND status = $2`
 
-	row, err := r.db.Query(query, sentTo, "pending")
+	var totalCount int
+
+	cRow := r.db.QueryRowContext(ctx, queryCount, sentTo, "pending")
+
+	err := cRow.Scan(&totalCount)
+	if err != nil {
+		return nil, err
+	}
+
+	offset := (page - 1) * limit
+
+	row, err := r.db.Query(query, sentTo, "pending", limit, offset)
 
 	if err != nil {
 		return nil, err
@@ -90,7 +122,14 @@ func (r *DataRepository) GetFriendRequestSentTo(ctx context.Context, sentTo int6
 
 	}
 
-	return request, nil
+	p := PaginatedResponse{
+		Data: request,
+		TotalCount: totalCount,
+		Page: int(page),
+		Limit: int(limit),
+	}
+
+	return &p, nil
 }
 
 func (r *DataRepository) GetFriendRequestById(ctx context.Context, id int64) (*FriendRequest, error) {
@@ -117,13 +156,13 @@ func (r *DataRepository) GetFriendRequestById(ctx context.Context, id int64) (*F
 	return &item, nil
 }
 
-func (d *DataRepository) UpdateFriendRequestStatus(ctx context.Context, status string, sentToId,id int64) error {
+func (d *DataRepository) UpdateFriendRequestStatus(ctx context.Context, status string, sentToId, id int64) error {
 
 	if status != "accepted" && status != "rejected" {
 		return errors.New("status can either be accepted or rejected only")
 	}
 
-	f,err := d.GetFriendRequestById(ctx,id)
+	f, err := d.GetFriendRequestById(ctx, id)
 
 	if err != nil {
 		return err
@@ -135,7 +174,7 @@ func (d *DataRepository) UpdateFriendRequestStatus(ctx context.Context, status s
 
 	query := `UPDATE friendRequest SET status = $1 WHERE id = $2`
 
-	_, err = d.db.ExecContext(ctx, query,status,id)
+	_, err = d.db.ExecContext(ctx, query, status, id)
 
 	return err
 }

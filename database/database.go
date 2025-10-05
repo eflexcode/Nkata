@@ -3,8 +3,8 @@ package database
 import (
 	"context"
 	"database/sql"
+	_ "github.com/lib/pq"
 	"time"
-	 _ "github.com/lib/pq"
 )
 
 type DatabaseConfig struct {
@@ -20,6 +20,13 @@ type DataRepository struct {
 
 func NewUserRepository(db *sql.DB) *DataRepository {
 	return &DataRepository{db: db}
+}
+
+type PaginatedResponse struct {
+	Data       any `json:"data"`
+	TotalCount int   `json:"total_count"`
+	Page       int   `json:"page"`
+	Limit      int   `json:"limit"`
 }
 
 func ConnectDatabase(databaseConfig DatabaseConfig) (*sql.DB, error) {
