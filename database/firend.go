@@ -6,11 +6,13 @@ import (
 )
 
 type Friendship struct {
-	ID        int64  `json:"id"`
-	UserID    int64  `json:"user_id"`
-	FirendID  int64  `json:"friend_id"`
-	Status    string `json:"status"` //blocked, unblocked
-	CreatedAt string `json:"created_at"`
+	ID             int64  `json:"id"`
+	UserID         int64  `json:"user_id"`
+	FirendID       int64  `json:"friend_id"`
+	FriendshipType string `json:"friendship_type"` //one-on-one or group
+	GroupID        int64  `json:"group_id"`// if group
+	CreatedAt      string `json:"created_at"`
+	ModifiedAt     string `json:"modified_at"`
 }
 
 type FriendRequest struct {
@@ -21,6 +23,7 @@ type FriendRequest struct {
 	CreatedAt string `json:"created_at"`
 }
 
+// ------------------------------ Friend Request ----------------------------------------------------------------------
 func (r *DataRepository) InsertFriendRequest(ctx context.Context, sentTo, sentBy int64) error {
 
 	query := `INSERT INTO friendRequest(sent_by,sent_to,status) VALUES($1,$2,$3)`
@@ -28,6 +31,15 @@ func (r *DataRepository) InsertFriendRequest(ctx context.Context, sentTo, sentBy
 	_, err := r.db.ExecContext(ctx, query, sentBy, sentTo, "pending")
 
 	return err
+}
+
+func (r *DataRepository) DeleteFriendRequest(ctx context.Context, id int64) error{
+
+	query := `DELETE FROM friendRequest WHERE id = $1`
+	_,err := r.db.ExecContext(ctx,query,id);
+
+	return err
+
 }
 
 // request i (client) sent out
@@ -72,10 +84,10 @@ func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentBy, pag
 	}
 
 	p := PaginatedResponse{
-		Data: request,
+		Data:       request,
 		TotalCount: totalCount,
-		Page: int(page),
-		Limit: int(limit),
+		Page:       int(page),
+		Limit:      int(limit),
 	}
 
 	return &p, nil
@@ -123,10 +135,10 @@ func (r *DataRepository) GetFriendRequestSentTo(ctx context.Context, sentTo, pag
 	}
 
 	p := PaginatedResponse{
-		Data: request,
+		Data:       request,
 		TotalCount: totalCount,
-		Page: int(page),
-		Limit: int(limit),
+		Page:       int(page),
+		Limit:      int(limit),
 	}
 
 	return &p, nil
@@ -178,3 +190,5 @@ func (d *DataRepository) UpdateFriendRequestStatus(ctx context.Context, status s
 
 	return err
 }
+
+//------------------------------ Friendship ----------------------------------------------------------------------

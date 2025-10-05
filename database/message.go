@@ -32,13 +32,13 @@ const (
 )
 
 type Message struct {
-	ID          int64       `json:"message_id"`
-	RoomID      int64       `json:"room_id"`
-	SenderID    string      `json:"sender_id"`
-	MessageChat string      `json:"message_chat"`
-	MessageType MessageType `json:"message_type"`
-	Media       Media       `json:"media"`
-	Seen        Seen        `json:"seen"`
-	CreatedAt   string      `json:"created_at"`
-	ModifiedAt  string      `json:"modified_at"`
+	ID           int64       `json:"message_id"`
+	FriendshipID int64       `json:"friendship_id"`
+	SenderID     string      `json:"sender_id"`
+	MessageChat  string      `json:"message_chat"`
+	MessageType  MessageType `json:"message_type"`
+	Media        Media       `json:"media"`
+	Seen         Seen        `json:"seen"`
+	CreatedAt    string      `json:"created_at"`
+	ModifiedAt   string      `json:"modified_at"`
 }
