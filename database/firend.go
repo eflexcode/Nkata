@@ -212,6 +212,13 @@ func (d *DataRepository) InsertFriendshipGroup(ctx context.Context, userId, grou
 
 }
 
+func (d *DataRepository) RemoveGroupFromFriendship(ctx context.Context, id int64) error {
+	query := `UPDATE friendship SET friendship SET group_id = $1  WHERE id = $2`
+
+	_, err := d.db.ExecContext(ctx, query,0, id)
+
+	return err
+}
 func (d *DataRepository) DeleteFriendship(ctx context.Context, id int64) error {
 	query := `DELETE FROM friendship WHERE id = $1`
 
