@@ -16,18 +16,18 @@ type Group struct {
 
 type GroupMember struct {
 	ID        int64  `json:"id"`
-	GroupID   int64  `json:"room_id"`
+	GroupID   int64  `json:"group_id"`
 	UserID    int64  `json:"user_id"`
 	Role      string `json:"role"` // admin or member
 	CreatedAt string `json:"created_at"`
 } // once u add a user to a group they get added here and in friendship
 
-type GroupMemberRemoved struct {
-	ID        int64  `json:"id"`
-	GroupID   int64  `json:"room_id"`
-	UserID    int64  `json:"user_id"`
-	CreatedAt string `json:"created_at"`
-}
+// type GroupMemberRemoved struct {
+// 	ID        int64  `json:"id"`
+// 	GroupID   int64  `json:"group_id"`
+// 	UserID    int64  `json:"user_id"`
+// 	CreatedAt string `json:"created_at"`
+// }
 
 func (d *DataRepository) InsertGroup(ctx context.Context, name string) error {
 
@@ -86,8 +86,8 @@ func (d *DataRepository) UpdateGroup(cxt context.Context, id int, name, descript
 			return err
 		}
 		return nil
-	}else if picUrl != "" {
-			_,err := d.db.ExecContext(cxt,queryPicUrl,picUrl)
+	} else if picUrl != "" {
+		_, err := d.db.ExecContext(cxt, queryPicUrl, picUrl)
 		if err != nil {
 			return err
 		}
@@ -99,6 +99,69 @@ func (d *DataRepository) UpdateGroup(cxt context.Context, id int, name, descript
 
 func (d *DataRepository) DeleteGroup(ctx context.Context, id int64) error {
 	query := `DELETE FROM group WHERE id = $1`
+
+	_, err := d.db.ExecContext(ctx, query, id)
+
+	return err
+}
+
+//------------------------------ GroupMemeber ----------------------------------------------------------------------
+
+func (d *DataRepository) InsertGroupMember(ctx context.Context, userId, groupId int64, role string) error {
+
+	query := `INSERT INTO group_member(user_id,group_id,role) VALUES($1,$2,$3)`
+
+	_, err := d.db.ExecContext(ctx, query, userId, groupId, role)
+
+	return err
+}
+
+func (d *DataRepository) GetGroupNembersByGroupId(cxt context.Context, id, limit, page int64) (*PaginatedResponse, error) {
+
+	offset := (page - 1) * limit
+
+	var totalCount int64
+
+	query := `SELECT * FROM group_member WHERE groud_id = $1 LIMIT = $2 OFFSET = $3`
+	queryCount := `SELECT COUNT(*) FROM group_member WHERE groud_id = $1`
+
+	if err := d.db.QueryRowContext(cxt, queryCount, id).Scan(&totalCount); err != nil {
+		return nil, err
+	}
+
+	row, err := d.db.QueryContext(cxt, query, id, limit, offset)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var members []GroupMember
+
+	for row.Next() {
+
+		var member GroupMember
+
+		err := row.Scan(&member.ID, &member.GroupID, &member.UserID, &member.Role, &member.CreatedAt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		members = append(members, member)
+	}
+
+	p := PaginatedResponse{
+		Data:       members,
+		TotalCount: int(totalCount),
+		Page:       int(page),
+		Limit:      int(limit),
+	}
+
+	return &p, nil
+}
+
+func (d *DataRepository) DeleteGroupMember(ctx context.Context, id int64) error {
+	query := `DELETE FROM group_member WHERE id = $1`
 
 	_, err := d.db.ExecContext(ctx, query, id)
 
