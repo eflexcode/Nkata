@@ -52,6 +52,7 @@ func IntiApi(db *sql.DB) {
 		})
 
 		r.Get("/swagger/*", httpSwagger.WrapHandler)
+
 		// r.Get("/swagger/*", httpSwagger.Handler(
 		// 	httpSwagger.URL("http://localhost:5557/v1/swagger/doc.json"),
 		// ))
@@ -63,6 +64,13 @@ func IntiApi(db *sql.DB) {
 			r.Put("/add-email", apiService.AddEmail)
 			r.Post("/add-email-verify", apiService.AddEmailVerify)
 			r.Post("/upload-profile-picture", apiService.UploadProfilPic)
+		})
+
+		r.Route("/firendship", func(r chi.Router) {
+			r.Use(HandleJWTAuth)
+			r.Post("/send-friend-request",apiService.SendFriendRequest)
+			r.Post("/responed-friend-request",apiService.RespondFriendRequest)
+
 		})
 
 		r.Route("/media", func(r chi.Router) {

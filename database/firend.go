@@ -41,6 +41,38 @@ func (r *DataRepository) DeleteFriendRequest(ctx context.Context, id int64) erro
 
 }
 
+func (r *DataRepository) HasSentMeRequest(ctx context.Context, firenId, userId int64)  bool {
+
+	query := `SELECT * FROM friendRequest WHERE sent_by = $1 AND sent_to = $2`
+
+	row, err := r.db.Query(query, firenId,userId)
+
+	if err != nil {
+		return true
+	}
+
+	defer row.Close()
+
+	
+	return row.Next()
+}
+
+
+func (r *DataRepository) CheckDuplicateRequest(ctx context.Context, userId, firendId int64)  bool {
+
+	query := `SELECT * FROM friendRequest WHERE sent_by = $1 AND sent_to = $2`
+
+	row, err := r.db.Query(query, userId,firendId)
+
+	if err != nil {
+		return true
+	}
+
+	defer row.Close()
+
+	
+	return row.Next()
+}
 // request i (client) sent out
 func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentBy, page, limit int64) (*PaginatedResponse, error) {
 
@@ -215,7 +247,7 @@ func (d *DataRepository) InsertFriendshipGroup(ctx context.Context, userId, grou
 func (d *DataRepository) RemoveGroupFromFriendship(ctx context.Context, id int64) error {
 	query := `UPDATE friendship SET friendship SET group_id = $1  WHERE id = $2`
 
-	_, err := d.db.ExecContext(ctx, query,0, id)
+	_, err := d.db.ExecContext(ctx, query, 0, id)
 
 	return err
 }
