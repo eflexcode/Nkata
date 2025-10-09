@@ -64,13 +64,13 @@ func IntiApi(db *sql.DB) {
 			r.Put("/add-email", apiService.AddEmail)
 			r.Post("/add-email-verify", apiService.AddEmailVerify)
 			r.Post("/upload-profile-picture", apiService.UploadProfilPic)
+			r.Get("/search/{username}", apiService.GetByUsernameSearch)
 		})
 
 		r.Route("/firendship", func(r chi.Router) {
 			r.Use(HandleJWTAuth)
 			r.Post("/send-friend-request",apiService.SendFriendRequest)
 			r.Post("/responed-friend-request",apiService.RespondFriendRequest)
-
 		})
 
 		r.Route("/media", func(r chi.Router) {

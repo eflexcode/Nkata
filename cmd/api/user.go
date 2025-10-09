@@ -70,6 +70,34 @@ func (api *ApiService) GetByUsername(w http.ResponseWriter, r *http.Request) {
 
 }
 
+
+// GetUser
+// @Summary Search User
+// @Description Responds with json
+// @Tags User
+// @Produce json
+// @Success 200 {object} database.User
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Security ApiKeyAuth
+// @Router /v1/user/search/{username} [get]
+func (api *ApiService) GetByUsernameSearch(w http.ResponseWriter, r *http.Request) {
+
+
+	username := chi.URLParam(r, "username")
+
+	user, err := api.database.GetByUsername(r.Context(), username)
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	writeJson(w, http.StatusOK, user)
+
+}
+
+
 // UploadProfilPic
 // @Summary Upload Profil Pic
 // @Description Responds with json

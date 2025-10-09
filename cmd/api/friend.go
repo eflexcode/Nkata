@@ -17,6 +17,16 @@ type RespondFriendRequestPayload struct {
 	Status string `json:"status"`
 }
 
+// @Summary Send friend request
+// @Description Responds with json
+// @Tags Friendship
+// @Accept json
+// @Produce json
+// @Param payload body FriendRequestPayload true "id and friend id"
+// @Success 200 {object} StandardResponse
+// @Failure 400  {object} errorslope
+// @Failure 500  {object} errorslope
+// @Router /v1/firendship/send-friend-request [post]
 func (apiService *ApiService) SendFriendRequest(w http.ResponseWriter, r *http.Request) {
 
 	var payload FriendRequestPayload
@@ -58,6 +68,16 @@ func (apiService *ApiService) SendFriendRequest(w http.ResponseWriter, r *http.R
 
 }
 
+// @Summary Responed to friend request
+// @Description Responds with json
+// @Tags Friendship
+// @Accept json
+// @Produce json
+// @Param payload body RespondFriendRequestPayload true "id and status"
+// @Success 200 {object} StandardResponse
+// @Failure 400  {object} errorslope
+// @Failure 500  {object} errorslope
+// @Router /v1/firendship/responed-friend-request [post]
 func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Request) {
 
 	var payload RespondFriendRequestPayload

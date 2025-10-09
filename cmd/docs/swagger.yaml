@@ -9,6 +9,13 @@ definitions:
       email:
         type: string
     type: object
+  api.FriendRequestPayload:
+    properties:
+      friend_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
   api.JwtJson:
     properties:
       token:
@@ -56,6 +63,13 @@ definitions:
       password:
         type: string
       username:
+        type: string
+    type: object
+  api.RespondFriendRequestPayload:
+    properties:
+      id:
+        type: integer
+      status:
         type: string
     type: object
   api.StandardResponse:
@@ -209,7 +223,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.errorslope'
-      summary: Reset Password
+      summary: Verify Reset Password  otp
       tags:
       - Auth
   /v1/auth/sign-in-with-email:
@@ -345,6 +359,66 @@ paths:
       summary: Sign-up
       tags:
       - Auth
+  /v1/firendship/responed-friend-request:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: id and status
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.RespondFriendRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Responed to friend request
+      tags:
+      - Friendship
+  /v1/firendship/send-friend-request:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: id and friend id
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.FriendRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Send friend request
+      tags:
+      - Friendship
   /v1/media/profiles/{img_name}:
     get:
       description: Responds with json
@@ -457,6 +531,29 @@ paths:
           schema:
             $ref: '#/definitions/api.errorslope'
       summary: Add email to user. endpoint sends otp
+      tags:
+      - User
+  /v1/user/search/{username}:
+    get:
+      description: Responds with json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      security:
+      - ApiKeyAuth: []
+      summary: Search User
       tags:
       - User
   /v1/user/update:
