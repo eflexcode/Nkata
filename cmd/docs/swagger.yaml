@@ -536,6 +536,12 @@ paths:
   /v1/user/search/{username}:
     get:
       description: Responds with json
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -545,6 +551,10 @@ paths:
             $ref: '#/definitions/database.User'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/api.errorslope'
         "500":

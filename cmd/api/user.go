@@ -76,19 +76,26 @@ func (api *ApiService) GetByUsername(w http.ResponseWriter, r *http.Request) {
 // @Description Responds with json
 // @Tags User
 // @Produce json
+// @Param username path string true "username"
 // @Success 200 {object} database.User
 // @Failure 400 {object} errorslope
+// @Failure 404 {object} errorslope
 // @Failure 500 {object} errorslope
 // @Security ApiKeyAuth
 // @Router /v1/user/search/{username} [get]
 func (api *ApiService) GetByUsernameSearch(w http.ResponseWriter, r *http.Request) {
-
 
 	username := chi.URLParam(r, "username")
 
 	user, err := api.database.GetByUsername(r.Context(), username)
 
 	if err != nil {
+
+		if err.Error() == "sql: no rows in result set" {
+			notFound(w,r,errors.New("no user found with username: "+username))
+			return
+		}
+
 		internalServer(w, r, err)
 		return
 	}

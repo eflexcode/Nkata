@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -91,6 +92,12 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 	frendRequest, err := api.database.GetFriendRequestById(ctx, payload.Id)
 
 	if err != nil {
+		
+		if err.Error() == "sql: no rows in result set" {
+			notFound(w,r,errors.New("no friend request found with username: "+strconv.Itoa(int(payload.Id))))
+			return
+		}
+
 		internalServer(w, r, err)
 		return
 	}

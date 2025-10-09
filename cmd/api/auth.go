@@ -154,7 +154,7 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			unauthorized(w, r, err)
+			unauthorized(w, r,  errors.New("somthing went wrong"))
 			return
 		}
 		internalServer(w, r, errors.New("somthing went wrong"))
@@ -220,7 +220,7 @@ func (api *ApiService) SignInEmail(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			unauthorized(w, r, err)
+			unauthorized(w, r,  errors.New("somthing went wrong"))
 			return
 		}
 		internalServer(w, r, errors.New("somthing went wrong"))
