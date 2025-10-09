@@ -3,6 +3,8 @@ package api
 import (
 	"errors"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 type FriendRequestPayload struct {
@@ -11,9 +13,8 @@ type FriendRequestPayload struct {
 }
 
 type RespondFriendRequestPayload struct {
-	Id       int64  `json:"id"`
-	FriendId int64  `json:"friend_id"`
-	Status   string `json:"status"`
+	Id     int64  `json:"id"`
+	Status string `json:"status"`
 }
 
 func (apiService *ApiService) SendFriendRequest(w http.ResponseWriter, r *http.Request) {
@@ -57,16 +58,71 @@ func (apiService *ApiService) SendFriendRequest(w http.ResponseWriter, r *http.R
 
 }
 
-func(api *ApiService) RespondFriendRequest(w http.ResponseWriter,r *http.Request){
+func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Request) {
 
 	var payload RespondFriendRequestPayload
+	ctx := r.Context()
 
-	if err := readJson(w,r,&payload); err != nil{
-		badRequest(w,r,err)
+	if err := readJson(w, r, &payload); err != nil {
+		badRequest(w, r, err)
 		return
 	}
 
-	if payload.Status == "accepted"  {
+	frendRequest, err := api.database.GetFriendRequestById(ctx, payload.Id)
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	if payload.Status == "accepted" {
+
+		err := api.database.UpdateFriendRequestStatus(ctx, payload.Status, payload.Id, frendRequest.SentTo)
+
+		if err != nil {
+			internalServer(w, r, err)
+			return
+		}
+
+		var friendship_id = uuid.New().String()
+
+		err1 := api.database.InsertFriendship(ctx, frendRequest.SentBy, frendRequest.SentTo, friendship_id)
+
+		err = api.database.InsertFriendship(ctx, frendRequest.SentTo, frendRequest.SentBy, friendship_id)
+
+		if err != nil || err1 != nil {
+			internalServer(w, r, err)
+			return
+		}
+
+		s := StandardResponse{
+			Status:  200,
+			Message: "firend request accepted successfully",
+		}
+
+		writeJson(w, 200, s)
+		return
+
+	} else if payload.Status == "rejected" {
+
+		err := api.database.UpdateFriendRequestStatus(ctx, payload.Status, payload.Id, frendRequest.SentTo)
+
+		if err != nil {
+			internalServer(w, r, err)
+			return
+		}
+
+		s := StandardResponse{
+			Status:  200,
+			Message: "firend request rejected successfully",
+		}
+
+		writeJson(w, 200, s)
+		return
+
+	} else {
+		badRequest(w, r, errors.New("invalid status type: status can either be accepted or rejected"))
+		return
 	}
 
 }
