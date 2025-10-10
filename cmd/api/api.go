@@ -69,8 +69,15 @@ func IntiApi(db *sql.DB) {
 
 		r.Route("/firendship", func(r chi.Router) {
 			r.Use(HandleJWTAuth)
-			r.Post("/send-friend-request",apiService.SendFriendRequest)
-			r.Post("/responed-friend-request",apiService.RespondFriendRequest)
+			r.Post("/request/send",apiService.SendFriendRequest)
+			r.Post("/request/responed",apiService.RespondFriendRequest)
+
+			r.Post("/group/create",)
+			r.Post("/group/update",)
+			r.Post("/group/upload-group",)
+			r.Post("/group/add-member",)
+			r.Post("/group/remove-member",)
+			r.Post("/group/delete",)
 		})
 
 		r.Route("/media", func(r chi.Router) {

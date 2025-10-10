@@ -29,13 +29,15 @@ type GroupMember struct {
 // 	CreatedAt string `json:"created_at"`
 // }
 
-func (d *DataRepository) InsertGroup(ctx context.Context, name string) error {
+func (d *DataRepository) InsertGroup(ctx context.Context, name string) (int64,error){
 
-	query := `INSERT INTO group(name,pic_url,description) VALUES($1,$2,$3)`
+	query := `INSERT INTO group(name,pic_url,description) VALUES($1,$2,$3) RETURNING id `
 
-	_, err := d.db.ExecContext(ctx, query, name, "", "")
+	var id int64
 
-	return err
+	err := d.db.QueryRowContext(ctx, query, name, "", "").Scan(&id)
+
+	return id,err
 }
 
 func (d *DataRepository) GetGroupById(cxt context.Context, id int64) (*Group, error) {
@@ -116,7 +118,7 @@ func (d *DataRepository) InsertGroupMember(ctx context.Context, userId, groupId 
 	return err
 }
 
-func (d *DataRepository) GetGroupNembersByGroupId(cxt context.Context, id, limit, page int64) (*PaginatedResponse, error) {
+func (d *DataRepository) GetGroupMembersByGroupId(cxt context.Context, id, limit, page int64) (*PaginatedResponse, error) {
 
 	offset := (page - 1) * limit
 
