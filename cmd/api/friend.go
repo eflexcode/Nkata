@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
 type FriendRequestPayload struct {
-	UserId   int64 `json:"user_id"`
-	FriendId int64 `json:"friend_id"`
+	FriendUsername string `json:"friend_username"`
 }
 
 type RespondFriendRequestPayload struct {
@@ -27,10 +27,17 @@ type RespondFriendRequestPayload struct {
 // @Success 200 {object} StandardResponse
 // @Failure 400  {object} errorslope
 // @Failure 500  {object} errorslope
-// @Router /v1/firendship/send-friend-request [post]
+// @Router /v1/firendship/request/send [post]
 func (apiService *ApiService) SendFriendRequest(w http.ResponseWriter, r *http.Request) {
 
 	var payload FriendRequestPayload
+
+	username, err := getUsernameFromCtx(r.Context())
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
 
 	if err := readJson(w, r, &payload); err != nil {
 		badRequest(w, r, err)
@@ -39,21 +46,21 @@ func (apiService *ApiService) SendFriendRequest(w http.ResponseWriter, r *http.R
 
 	ctx := r.Context()
 
-	boolean := apiService.database.HasSentMeRequest(ctx, payload.FriendId, payload.UserId)
+	boolean := apiService.database.HasSentMeRequest(ctx, payload.FriendUsername, username)
 
 	if boolean {
 		conflict(w, r, errors.New("user already sent you a friend request"))
 		return
 	}
 
-	duplicate := apiService.database.CheckDuplicateRequest(ctx, payload.UserId, payload.FriendId)
+	duplicate := apiService.database.CheckDuplicateRequest(ctx, username, payload.FriendUsername)
 
 	if duplicate {
 		conflict(w, r, errors.New("you already a friend request to this user"))
 		return
 	}
 
-	err := apiService.database.InsertFriendRequest(ctx, payload.FriendId, payload.UserId)
+	err = apiService.database.InsertFriendRequest(ctx, payload.FriendUsername, username)
 
 	if err != nil {
 		internalServer(w, r, err)
@@ -78,7 +85,7 @@ func (apiService *ApiService) SendFriendRequest(w http.ResponseWriter, r *http.R
 // @Success 200 {object} StandardResponse
 // @Failure 400  {object} errorslope
 // @Failure 500  {object} errorslope
-// @Router /v1/firendship/responed-friend-request [post]
+// @Router /v1/firendship/request/responed [post]
 func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Request) {
 
 	var payload RespondFriendRequestPayload
@@ -92,9 +99,9 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 	frendRequest, err := api.database.GetFriendRequestById(ctx, payload.Id)
 
 	if err != nil {
-		
+
 		if err.Error() == "sql: no rows in result set" {
-			notFound(w,r,errors.New("no friend request found with username: "+strconv.Itoa(int(payload.Id))))
+			notFound(w, r, errors.New("no friend request found with username: "+strconv.Itoa(int(payload.Id))))
 			return
 		}
 
@@ -104,7 +111,7 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 
 	if payload.Status == "accepted" {
 
-		err := api.database.UpdateFriendRequestStatus(ctx, payload.Status, payload.Id, frendRequest.SentTo)
+		err := api.database.UpdateFriendRequestStatus(ctx, payload.Status, payload.Id)
 
 		if err != nil {
 			internalServer(w, r, err)
@@ -132,7 +139,7 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 
 	} else if payload.Status == "rejected" {
 
-		err := api.database.UpdateFriendRequestStatus(ctx, payload.Status, payload.Id, frendRequest.SentTo)
+		err := api.database.UpdateFriendRequestStatus(ctx, payload.Status, payload.Id)
 
 		if err != nil {
 			internalServer(w, r, err)
@@ -153,3 +160,55 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 	}
 
 }
+
+// @Summary Deleted Request
+// @Description Responds with json
+// @Tags Friendship
+// @Param id  path string true "friend request id"
+// @Produce json
+// @Success 200 {file} file
+// @Failure 404 {object} errorslope
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/firendship/request/delete/{id}  [post]
+func (api *ApiService) DeleteFriendRequest(w http.ResponseWriter, r *http.Request) {
+
+	username, err := getUsernameFromCtx(r.Context())
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+
+	idInt, err := strconv.Atoi(id)
+
+	if err != nil {
+		badRequest(w, r, errors.New("Id is not a number"))
+		return
+	}
+
+	request, err := api.database.GetFriendRequestById(ctx, int64(idInt))
+
+	if request.SentBy != username {
+		unauthorized(w, r, errors.New("user does not have permision to perform this action"))
+		return
+	}
+
+	err = api.database.DeleteFriendRequest(ctx, int64(idInt))
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	s := StandardResponse{
+		Status:  200,
+		Message: "firend request deleted successfully",
+	}
+
+	writeJson(w, 200, s)
+}
+
+// func(api *ApiService) GetMy

@@ -69,15 +69,18 @@ func IntiApi(db *sql.DB) {
 
 		r.Route("/firendship", func(r chi.Router) {
 			r.Use(HandleJWTAuth)
-			r.Post("/request/send",apiService.SendFriendRequest)
-			r.Post("/request/responed",apiService.RespondFriendRequest)
+			r.Post("/request/send", apiService.SendFriendRequest)
+			r.Post("/request/responed", apiService.RespondFriendRequest)
+			r.Post("/request/delete/{id}", apiService.DeleteFriendRequest)
+			r.Get("/request/get-sent")
+			r.Get("/request/get-received")
 
-			r.Post("/group/create",)
-			r.Post("/group/update",)
-			r.Post("/group/upload-group",)
-			r.Post("/group/add-member",)
-			r.Post("/group/remove-member",)
-			r.Post("/group/delete",)
+			r.Post("/group/create")
+			r.Post("/group/update")
+			r.Post("/group/upload-group")
+			r.Post("/group/add-member")
+			r.Post("/group/remove-member")
+			r.Post("/group/delete")
 		})
 
 		r.Route("/media", func(r chi.Router) {
