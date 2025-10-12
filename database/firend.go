@@ -75,7 +75,7 @@ func (r *DataRepository) CheckDuplicateRequest(ctx context.Context, username, fi
 }
 
 // request i (client) sent out
-func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentByUsername, page, limit int64) (*PaginatedResponse, error) {
+func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentByUsername string, page, limit int64) (*PaginatedResponse, error) {
 
 	var request []FriendRequest
 
@@ -229,7 +229,7 @@ func (d *DataRepository) UpdateFriendRequestStatus(ctx context.Context, status s
 
 func (d *DataRepository) InsertFriendship(ctx context.Context, username, firendUsername, friendship_id string) error {
 
-	query := `INSERT INTO friendship(friendship_id,username,friend_id,modified_at) VALUES($1,$2,$3,$4,$5)`
+	query := `INSERT INTO friendship(friendship_id,username,friend_username,modified_at) VALUES($1,$2,$3,$4,$5)`
 
 	_, err := d.db.ExecContext(ctx, query, friendship_id, username, firendUsername, "one-on-one", time.Now())
 

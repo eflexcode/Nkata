@@ -211,4 +211,34 @@ func (api *ApiService) DeleteFriendRequest(w http.ResponseWriter, r *http.Reques
 	writeJson(w, 200, s)
 }
 
-// func(api *ApiService) GetMy
+func (api *ApiService) GetFriendRequestSent(w http.ResponseWriter, r *http.Request) {
+
+	username, err := getUsernameFromCtx(r.Context())
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	page := r.URL.Query().Get("page")
+	limit := r.URL.Query().Get("limit")
+
+	pageInt, err := strconv.Atoi(page)
+	limitInt, errp := strconv.Atoi(limit)
+
+	if err != nil || errp != nil {
+		badRequest(w, r, errors.New("page or limitis not a number"))
+		return
+	}
+
+	response, err := api.database.GetFriendRequestSentBy(ctx, username, int64(pageInt), int64(limitInt))
+	
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	writeJson(w, 200, response)
+}
