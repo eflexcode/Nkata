@@ -126,7 +126,7 @@ func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentByUsern
 }
 
 // request i (client) was sent
-func (r *DataRepository) GetFriendRequestSentTo(ctx context.Context, sentToUsername, page, limit int64) (*PaginatedResponse, error) {
+func (r *DataRepository) GetFriendRequestSentTo(ctx context.Context, sentToUsername string, page, limit int64) (*PaginatedResponse, error) {
 
 	var request []FriendRequest
 

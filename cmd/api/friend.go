@@ -211,6 +211,17 @@ func (api *ApiService) DeleteFriendRequest(w http.ResponseWriter, r *http.Reques
 	writeJson(w, 200, s)
 }
 
+// @Summary Get Friend Request Sent
+// @Description Responds with json
+// @Tags Friendship
+// @Param page  query string true "page to get"
+// @Param limit  query string true "page limit"
+// @Produce json
+// @Success 200 {object} database.PaginatedResponse
+// @Failure 404 {object} errorslope
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/firendship/request/get-sent  [get]
 func (api *ApiService) GetFriendRequestSent(w http.ResponseWriter, r *http.Request) {
 
 	username, err := getUsernameFromCtx(r.Context())
@@ -234,11 +245,55 @@ func (api *ApiService) GetFriendRequestSent(w http.ResponseWriter, r *http.Reque
 	}
 
 	response, err := api.database.GetFriendRequestSentBy(ctx, username, int64(pageInt), int64(limitInt))
-	
+
 	if err != nil {
 		internalServer(w, r, err)
 		return
 	}
 
 	writeJson(w, 200, response)
+}
+
+// @Summary Get Friend Request Recieved
+// @Description Responds with json
+// @Tags Friendship
+// @Param page  query string true "page to get"
+// @Param limit  query string true "page limit"
+// @Produce json
+// @Success 200 {object} database.PaginatedResponse
+// @Failure 404 {object} errorslope
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/firendship/request/get-recieved  [get]
+func (api *ApiService) GetFriendRequestRecieved(w http.ResponseWriter, r *http.Request) {
+
+	username, err := getUsernameFromCtx(r.Context())
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	page := r.URL.Query().Get("page")
+	limit := r.URL.Query().Get("limit")
+
+	pageInt, err := strconv.Atoi(page)
+	limitInt, errp := strconv.Atoi(limit)
+
+	if err != nil || errp != nil {
+		badRequest(w, r, errors.New("page or limitis not a number"))
+		return
+	}
+
+	response, err := api.database.GetFriendRequestSentTo(ctx, username, int64(pageInt), int64(limitInt))
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	writeJson(w, 200, response)
+
 }

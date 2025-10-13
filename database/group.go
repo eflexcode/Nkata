@@ -17,7 +17,7 @@ type Group struct {
 type GroupMember struct {
 	ID        int64  `json:"id"`
 	GroupID   int64  `json:"group_id"`
-	UserID    int64  `json:"user_id"`
+	Username  int64  `json:"username"`
 	Role      string `json:"role"` // admin or member
 	CreatedAt string `json:"created_at"`
 } // once u add a user to a group they get added here and in friendship
@@ -29,7 +29,7 @@ type GroupMember struct {
 // 	CreatedAt string `json:"created_at"`
 // }
 
-func (d *DataRepository) InsertGroup(ctx context.Context, name string) (int64,error){
+func (d *DataRepository) InsertGroup(ctx context.Context, name string) (int64, error) {
 
 	query := `INSERT INTO group(name,pic_url,description) VALUES($1,$2,$3) RETURNING id `
 
@@ -37,7 +37,7 @@ func (d *DataRepository) InsertGroup(ctx context.Context, name string) (int64,er
 
 	err := d.db.QueryRowContext(ctx, query, name, "", "").Scan(&id)
 
-	return id,err
+	return id, err
 }
 
 func (d *DataRepository) GetGroupById(cxt context.Context, id int64) (*Group, error) {
@@ -109,13 +109,34 @@ func (d *DataRepository) DeleteGroup(ctx context.Context, id int64) error {
 
 //------------------------------ GroupMemeber ----------------------------------------------------------------------
 
-func (d *DataRepository) InsertGroupMember(ctx context.Context, userId, groupId int64, role string) error {
+func (d *DataRepository) InsertGroupMember(ctx context.Context, username string, groupId int64, role string) error {
 
-	query := `INSERT INTO group_member(user_id,group_id,role) VALUES($1,$2,$3)`
+	query := `INSERT INTO group_member(username,group_id,role) VALUES($1,$2,$3)`
 
-	_, err := d.db.ExecContext(ctx, query, userId, groupId, role)
+	_, err := d.db.ExecContext(ctx, query, username, groupId, role)
 
 	return err
+}
+
+func (d *DataRepository) GetGroupMemberByUsername(cxt context.Context, username string, id int) (*GroupMember, error) {
+
+	query := `SELECT * FROM group_member WHERE groud_id = $1 AND username = $2`
+
+	row, err := d.db.QueryContext(cxt, query, id, username)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var member GroupMember
+
+	err = row.Scan(&member.ID, &member.GroupID, &member.Username, &member.Role, &member.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &member,err
 }
 
 func (d *DataRepository) GetGroupMembersByGroupId(cxt context.Context, id, limit, page int64) (*PaginatedResponse, error) {
@@ -143,7 +164,7 @@ func (d *DataRepository) GetGroupMembersByGroupId(cxt context.Context, id, limit
 
 		var member GroupMember
 
-		err := row.Scan(&member.ID, &member.GroupID, &member.UserID, &member.Role, &member.CreatedAt)
+		err := row.Scan(&member.ID, &member.GroupID, &member.Username, &member.Role, &member.CreatedAt)
 
 		if err != nil {
 			return nil, err
