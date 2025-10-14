@@ -79,8 +79,8 @@ func IntiApi(db *sql.DB) {
 			r.Post("/group/get-members/{id}", apiService.GetGroupMembers)
 			r.Post("/group/update")
 			r.Post("/group/upload-group-pic")
-			r.Post("/group/add-member")
-			r.Post("/group/remove-member")
+			r.Post("/group/add-member",apiService.AddGroupMember)
+			r.Post("/group/remove-member",apiService.RemoveGroupMember)
 			r.Post("/group/delete/{id}", apiService.DeleteGroup)
 		})
 

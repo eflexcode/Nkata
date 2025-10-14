@@ -12,6 +12,11 @@ type CreatGroup struct {
 	Name string `json:"name"`
 }
 
+type AddGroup struct {
+	Username string `json:"username"`
+	id       int64  `json:"id"`
+}
+
 func (api *ApiService) CreateGroup(w http.ResponseWriter, r *http.Request) {
 
 	var group CreatGroup
@@ -38,6 +43,13 @@ func (api *ApiService) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = api.database.InsertGroupMember(ctx, username, id, "admin")
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	err = api.database.InsertFriendshipGroup(ctx, username, id)
 
 	if err != nil {
 		internalServer(w, r, err)
@@ -86,16 +98,23 @@ func (api *ApiService) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	err = api.database.DeleteGroup(ctx, int64(idInt))
 
 	if err != nil {
-		internalServer(w, r,err)
+		internalServer(w, r, err)
 		return
 	}
 
-	s:= StandardResponse{
-		Status: 200,
+	err = api.database.DeleteAllGroupMembers(ctx, int64(idInt))
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	s := StandardResponse{
+		Status:  200,
 		Message: "group deleted succefully",
 	}
-//TODO delete all mebers
-	writeJson(w,200,s)
+
+	writeJson(w, 200, s)
 
 }
 
@@ -120,4 +139,89 @@ func (api *ApiService) GetGroupMembers(w http.ResponseWriter, r *http.Request) {
 
 	writeJson(w, 200, result)
 
+}
+
+func (api *ApiService) AddGroupMember(w http.ResponseWriter, r *http.Request) {
+
+	var newMember AddGroup
+
+	if err := readJson(w, r, &newMember); err != nil {
+		badRequest(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	err := api.database.InsertGroupMember(ctx, newMember.Username, newMember.id, "member")
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	err = api.database.InsertFriendshipGroup(ctx, newMember.Username, newMember.id)
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	s := StandardResponse{
+		Status:  200,
+		Message: "member added to group",
+	}
+
+	writeJson(w, 200, s)
+
+}
+
+func (api *ApiService) RemoveGroupMember(w http.ResponseWriter, r *http.Request) {
+
+	var newMember AddGroup
+
+	if err := readJson(w, r, &newMember); err != nil {
+		badRequest(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	username, err := getUsernameFromCtx(ctx)
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	member, err := api.database.GetGroupMemberByUsername(ctx, username, int(newMember.id))
+
+	if err != nil {
+		unauthorized(w, r, errors.New("user does not have permision to perform this action"))
+		return
+	}
+
+	if member.Role != "admin" {
+		unauthorized(w, r, errors.New("user does not have permision to perform this action"))
+		return
+	}
+
+	err = api.database.DeleteGroupMember(ctx, newMember.Username, newMember.id)
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	err = api.database.UpdateFriendshipGroupId(ctx, newMember.Username, 000)
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	s := StandardResponse{
+		Status:  200,
+		Message: "member removed from group",
+	}
+
+	writeJson(w, 200, s)
 }

@@ -183,10 +183,19 @@ func (d *DataRepository) GetGroupMembersByGroupId(cxt context.Context, id, limit
 	return &p, nil
 }
 
-func (d *DataRepository) DeleteGroupMember(ctx context.Context, id int64) error {
-	query := `DELETE FROM group_member WHERE id = $1`
+//remove from group
+func (d *DataRepository) DeleteGroupMember(ctx context.Context, username string,id int64) error {
+	query := `DELETE FROM group_member WHERE username = $1 AND group_id = $2`
 
-	_, err := d.db.ExecContext(ctx, query, id)
+	_, err := d.db.ExecContext(ctx, query, username,id)
+
+	return err
+}
+
+func (d *DataRepository) DeleteAllGroupMembers(ctx context.Context,id int64) error{
+		query := `DELETE FROM group_member WHERE group_id = $1`
+
+	_, err := d.db.ExecContext(ctx, query,id)
 
 	return err
 }

@@ -10,6 +10,7 @@ type Friendship struct {
 	ID             int64     `json:"id"`
 	FriendShipId   string    `json:"firendship_id"`
 	Username       string    `json:"username"`
+	LastMessage    string    `json:"last_message"`
 	FirendUsername string    `json:"friend_username,omitempty"`
 	FriendshipType string    `json:"friendship_type"`    //one-on-one or group
 	GroupID        int64     `json:"group_id,omitempty"` //if group; remove id to remove member from group
@@ -237,11 +238,19 @@ func (d *DataRepository) InsertFriendship(ctx context.Context, username, firendU
 
 }
 
-func (d *DataRepository) InsertFriendshipGroup(ctx context.Context, userId string, groupId int64) error {
+func (d *DataRepository) UpdateFriendshipGroupId(ctx context.Context, username string, group_id int64) error {
+
+	query := `UPDATE friendship SET group_id = $1 WHERE username = $2`
+	_, err := d.db.ExecContext(ctx, query, group_id, username)
+
+	return err
+}
+
+func (d *DataRepository) InsertFriendshipGroup(ctx context.Context, username string, groupId int64) error {
 
 	query := `INSERT INTO friendship(username,group_id,modified_at) VALUES($1,$2,$3,$4)`
 
-	_, err := d.db.ExecContext(ctx, query, userId, groupId, "group", time.Now())
+	_, err := d.db.ExecContext(ctx, query, username, groupId, "group", time.Now())
 
 	return err
 
