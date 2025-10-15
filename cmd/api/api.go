@@ -76,17 +76,17 @@ func IntiApi(db *sql.DB) {
 			r.Get("/request/get-received", apiService.GetFriendRequestRecieved)
 
 			r.Post("/group/create", apiService.CreateGroup)
-			r.Post("/group/get-members/{id}", apiService.GetGroupMembers)
-			r.Post("/group/update",apiService.UpdateGroup)
+			r.Get("/group/get-members/{id}", apiService.GetGroupMembers)
+			r.Put("/group/update",apiService.UpdateGroup)
 			r.Post("/group/upload-group-pic",apiService.UploadGroupPic)
 			r.Post("/group/add-member",apiService.AddGroupMember)
-			r.Post("/group/remove-member",apiService.RemoveGroupMember)
-			r.Post("/group/delete/{id}", apiService.DeleteGroup)
+			r.Delete("/group/remove-member",apiService.RemoveGroupMember)
+			r.Delete("/group/delete/{id}", apiService.DeleteGroup)
 		})
 
 		r.Route("/media", func(r chi.Router) {
 			r.Get("/profiles/{img_name}", apiService.LoadProfilPic)
-			r.Post("/groups/{img_name}",apiService.LoadGroupPic)
+			r.Get("/groups/{img_name}",apiService.LoadGroupPic)
 		})
 
 		r.Route("/auth", func(r chi.Router) {

@@ -31,6 +31,16 @@ type AddGroup struct {
 	Id       int64  `json:"id"`
 }
 
+// @Summary Create a new group
+// @Description Responds with json
+// @Tags Friendship
+// @Accept json
+// @Produce json
+// @Param payload body CreatGroup true "name"
+// @Success 200 {object} StandardResponse
+// @Failure 400  {object} errorslope
+// @Failure 500  {object} errorslope
+// @Router /v1/firendship/group/create [post]
 func (api *ApiService) CreateGroup(w http.ResponseWriter, r *http.Request) {
 
 	var group CreatGroup
@@ -79,6 +89,17 @@ func (api *ApiService) CreateGroup(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// @Summary Delete group
+// @Description Responds with json
+// @Tags Friendship
+// @Accept json
+// @Produce json
+// @Param id path string true "id"
+// @Success 200 {object} StandardResponse
+// @Failure 400  {object} errorslope
+// @Failure 500  {object} errorslope
+// @Failure 402  {object} errorslope
+// @Router /v1/firendship/group/delete/{id} [delete]
 func (api *ApiService) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 
 	id := chi.URLParam(r, "id")
@@ -132,6 +153,19 @@ func (api *ApiService) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// @Summary Get group members
+// @Description Responds with json
+// @Tags Friendship
+// @Accept json
+// @Produce json
+// @Param id path string true "id"
+// @Param page query string true "page"
+// @Param limit query string true "limit"
+// @Success 200 {object} StandardResponse
+// @Failure 400  {object} errorslope
+// @Failure 500  {object} errorslope
+// @Failure 402  {object} errorslope
+// @Router /v1/firendship/group/get-members/{id} [get]
 func (api *ApiService) GetGroupMembers(w http.ResponseWriter, r *http.Request) {
 
 	id := chi.URLParam(r, "id")
@@ -155,6 +189,17 @@ func (api *ApiService) GetGroupMembers(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// @Summary Add group member
+// @Description Responds with json
+// @Tags Friendship
+// @Accept json
+// @Produce json
+// @Param payload body AddGroup true "group id and username"
+// @Success 200 {object} StandardResponse
+// @Failure 400  {object} errorslope
+// @Failure 500  {object} errorslope
+// @Failure 402  {object} errorslope
+// @Router /v1/firendship/group/add-member [post]
 func (api *ApiService) AddGroupMember(w http.ResponseWriter, r *http.Request) {
 
 	var newMember AddGroup
@@ -189,6 +234,17 @@ func (api *ApiService) AddGroupMember(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// @Summary Remove group member
+// @Description Responds with json
+// @Tags Friendship
+// @Accept json
+// @Produce json
+// @Param payload body AddGroup true "group id and username"
+// @Success 200 {object} StandardResponse
+// @Failure 400  {object} errorslope
+// @Failure 500  {object} errorslope
+// @Failure 402  {object} errorslope
+// @Router /v1/firendship/group/remove-member [delete]
 func (api *ApiService) RemoveGroupMember(w http.ResponseWriter, r *http.Request) {
 
 	var newMember AddGroup
@@ -240,6 +296,17 @@ func (api *ApiService) RemoveGroupMember(w http.ResponseWriter, r *http.Request)
 	writeJson(w, 200, s)
 }
 
+// @Summary Remove group member
+// @Description Responds with json
+// @Tags Friendship
+// @Accept json
+// @Produce json
+// @Param payload body UpdateGroupPayload true "group details"
+// @Success 200 {object} StandardResponse
+// @Failure 400  {object} errorslope
+// @Failure 500  {object} errorslope
+// @Failure 402  {object} errorslope
+// @Router /v1/firendship/group/update [delete]
 func (api *ApiService) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 
 	var group UpdateGroupPayload
@@ -257,7 +324,7 @@ func (api *ApiService) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 		internalServer(w, r, err)
 		return
 	}
-	
+
 	s := StandardResponse{
 		Status:  http.StatusOK,
 		Message: "group profile updated successfuly",
@@ -266,6 +333,17 @@ func (api *ApiService) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	writeJson(w, http.StatusOK, s)
 }
 
+// @Summary Upload Group Pic
+// @Description Responds with json
+// @Tags User
+// @Accept multipart/form-data
+// @Produce json
+// @Param img formData file true "upload send png jpeg and gif"
+// @Success 200 {object} StandardResponse
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Security ApiKeyAuth
+// @Router /v1/firendship/group/upload-group-pic [post]
 func (api *ApiService) UploadGroupPic(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -341,6 +419,14 @@ func (api *ApiService) UploadGroupPic(w http.ResponseWriter, r *http.Request) {
 	writeJson(w, http.StatusOK, s)
 }
 
+// @Summary Download Group Pic
+// @Description Responds with json
+// @Tags Media
+// @Param img_name path string true "file name"
+// @Produce octet-stream
+// @Success 200 {file} file
+// @Failure 404 {object} errorslope
+// @Router /v1/media/groups/{img_name} [get]
 func (api *ApiService) LoadGroupPic(w http.ResponseWriter, r *http.Request) {
 
 	filename := chi.URLParam(r, "img_name")
