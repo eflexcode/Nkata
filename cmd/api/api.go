@@ -77,8 +77,8 @@ func IntiApi(db *sql.DB) {
 
 			r.Post("/group/create", apiService.CreateGroup)
 			r.Post("/group/get-members/{id}", apiService.GetGroupMembers)
-			r.Post("/group/update")
-			r.Post("/group/upload-group-pic")
+			r.Post("/group/update",apiService.UpdateGroup)
+			r.Post("/group/upload-group-pic",apiService.UploadGroupPic)
 			r.Post("/group/add-member",apiService.AddGroupMember)
 			r.Post("/group/remove-member",apiService.RemoveGroupMember)
 			r.Post("/group/delete/{id}", apiService.DeleteGroup)
@@ -86,6 +86,7 @@ func IntiApi(db *sql.DB) {
 
 		r.Route("/media", func(r chi.Router) {
 			r.Get("/profiles/{img_name}", apiService.LoadProfilPic)
+			r.Post("/groups/{img_name}",apiService.LoadGroupPic)
 		})
 
 		r.Route("/auth", func(r chi.Router) {
