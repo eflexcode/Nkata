@@ -147,6 +147,51 @@ func (d *DataRepository) GetMessages(cxt context.Context, FriendshipID string, p
 
 func (d *DataRepository) SearchMessages(cxt context.Context, FriendshipID, search, start_at, end_at string, page, limit int) (*PaginatedResponse, error) {
 
-	
+	query := `SELECT * FROM message WHERE friendship_id = $1 AND text_content LIKE =$2 AND created_at BETWEEN =$3 AND =$4  LIMIT = $5 OFFSET = $6 ORDER BY created_at DESC`
+	queryCount := `SELECT COUNT(*) FROM message WHERE friendship_id = $1 AND text_content LIKE =$2 AND created_at BETWEEN =$3 AND =$4`
 
+	var totalCount int
+	offset := (page - 1) * limit
+
+	counrRow := d.db.QueryRowContext(cxt, queryCount, FriendshipID, search, start_at, end_at)
+
+	err := counrRow.Scan(&totalCount)
+
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := d.db.QueryContext(cxt, query, FriendshipID, search, start_at, end_at, limit, offset)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var messages []Message
+
+	for row.Next() {
+
+		var message Message
+
+		row.Scan(&message.ID, &message.FriendshipID, &message.SenderUsername, &message.TextContent, &message.Media.MediaUrl, &message.Media.MediaType, &message.CreatedAt, &message.ModifiedAt)
+		messages = append(messages, message)
+	}
+
+	s := PaginatedResponse{
+		Data:       messages,
+		TotalCount: totalCount,
+		Page:       page,
+		Limit:      limit,
+	}
+	
+	return &s, nil
+}
+
+func (d *DataRepository) UpdateMessage(cxt context.Context, id int, updatedText string) error {
+
+	query := `UPDATE message SET text_content = $1 WHERE id = $2`
+
+	_, err := d.db.ExecContext(cxt, query, updatedText, id)
+
+	return err
 }
