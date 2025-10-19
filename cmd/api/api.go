@@ -84,6 +84,13 @@ func IntiApi(db *sql.DB) {
 			r.Delete("/group/delete/{id}", apiService.DeleteGroup)
 		})
 
+		r.Route("/message",func(r chi.Router) {
+			r.Use(HandleJWTAuth)
+			r.Get("/{id}",)
+			r.Post("/upload-media/{friendship_id}",)
+			r.Get("/get-messages-friendship-id",)
+		})
+
 		r.Route("/media", func(r chi.Router) {
 			r.Get("/profiles/{img_name}", apiService.LoadProfilPic)
 			r.Get("/groups/{img_name}",apiService.LoadGroupPic)
