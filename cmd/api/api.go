@@ -86,12 +86,12 @@ func IntiApi(db *sql.DB) {
 
 		r.Route("/message",func(r chi.Router) {
 			r.Use(HandleJWTAuth)
-			r.Get("/{id}",apiService.GetMessageByMessageId)
+			r.Get("/{message_id}",apiService.GetMessageByMessageId)
 			r.Post("/upload-media/{friendship_id}",)
 			r.Post("/send/{friendship_id}",)
 			r.Get("/get-messages-friendship-id",)
 			r.Get("/search-messages-friendship-id",)
-			r.Delete("/{id}",)
+			r.Delete("/{message_id}",apiService.DeleteMessageByMessageId)
 		})
 
 		r.Route("/media", func(r chi.Router) {
