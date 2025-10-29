@@ -88,7 +88,7 @@ func IntiApi(db *sql.DB) {
 			r.Use(HandleJWTAuth)
 			r.Get("/{message_id}",apiService.GetMessageByMessageId)
 			// r.Post("/upload-media/{friendship_id}",)
-			// r.Post("/socket/{friendship_id}",)
+			r.Post("/ws/{friendship_id}",apiService.MessageWsHandler)
 			r.Get("/get-messages/{friendship_id}",apiService.GetMessages)
 			r.Get("/search-messages/{friendship_id}",apiService.SearchMessages)
 			r.Delete("/{message_id}",apiService.DeleteMessageByMessageId)

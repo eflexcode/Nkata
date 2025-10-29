@@ -19,8 +19,6 @@ const (
 	Image
 	Video
 	Audio
-	VoiceNote
-	VideoNote
 )
 
 type Media struct {

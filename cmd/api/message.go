@@ -3,11 +3,79 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/gorilla/websocket"
 )
+
+var upgradeConn = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {
+	return true
+}}
+
+type MediaType int
+
+const (
+	NoMedia MediaType = iota
+	Image
+	Video
+	Audio
+)
+
+type Media struct {
+	MediaUrl  string `json:"media_url"`
+	MediaType string `json:"media_type"` // NoMedia,Image,Video,Audio,Doc
+}
+type MessageDataSend struct {
+	FriendshipID   int64  `json:"friendship_id"` //put groupd id here if group
+	SenderUsername string `json:"sender_username"`
+	MessageType    string `json:"message_type"` //MessageChat,MessageRaction,MessageInfo
+	TextContent    string `json:"text_content"`
+	Media          Media  `json:"media"`
+	CreatedAt      string `json:"created_at"`
+	ModifiedAt     string `json:"modified_at"`
+}
+type MessagePayload struct {
+	Type    string          `json:"type"`
+	Payload MessageDataSend `json:"paylod"`
+}
+
+func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) {
+
+	conn, err := upgradeConn.Upgrade(w, r, nil)
+
+	if err != nil {
+		internalServer(w, r, errors.New("failed to upgrade connection to ws"))
+		return
+	}
+
+	defer conn.Close()
+
+	for {
+
+		messageType, data, err := conn.ReadMessage()
+		if err != nil {
+			log.Printf("Error reading message: %v", err)
+		}
+
+		switch messageType {
+
+		case websocket.TextMessage:
+
+			api.database.InsertMessage()
+
+		case websocket.BinaryMessage:
+
+		default:
+
+
+		}
+
+	}
+
+}
 
 func (api *ApiService) GetMessageByMessageId(w http.ResponseWriter, r *http.Request) {
 
