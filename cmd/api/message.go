@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"main/database"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -129,7 +131,36 @@ func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) 
 
 		case websocket.BinaryMessage:
 
-			
+			strconv.Itoa(messageType).
+
+			io.Reader.Read(data)
+
+			currentTime := time.Now().UnixMilli()
+
+			currentTimeString := strconv.Itoa(int(currentTime)) + filepath.Ext(fileHeader.Filename)
+
+			destinationFile, err := os.Create("/home/ifeanyi/nkata_storage/chat_storage/" + currentTimeString)
+
+			if err != nil {
+				internalServer(w, r, err)
+				return
+			}
+
+			defer destinationFile.Close()
+
+			_, err = file.Seek(0, io.SeekStart)
+
+			if err != nil {
+				internalServer(w, r, err)
+				return
+			}
+
+			_, err = io.Copy(destinationFile, file)
+
+			if err != nil {
+				internalServer(w, r, err)
+				return
+			}
 
 		default:
 			log.Printf("cannot determin incoming socket data type: %v", err)
