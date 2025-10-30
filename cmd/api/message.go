@@ -2,12 +2,16 @@ package api
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"log"
+	"main/database"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -28,18 +32,18 @@ type Media struct {
 	MediaUrl  string `json:"media_url"`
 	MediaType string `json:"media_type"` // NoMedia,Image,Video,Audio,Doc
 }
-type MessageDataSend struct {
-	FriendshipID   int64  `json:"friendship_id"` //put groupd id here if group
+
+type MessagePayload struct {
+	FriendshipID   string `json:"friendship_id"` //put groupd id here if group
 	SenderUsername string `json:"sender_username"`
 	MessageType    string `json:"message_type"` //MessageChat,MessageRaction,MessageInfo
 	TextContent    string `json:"text_content"`
 	Media          Media  `json:"media"`
-	CreatedAt      string `json:"created_at"`
-	ModifiedAt     string `json:"modified_at"`
 }
-type MessagePayload struct {
-	Type    string          `json:"type"`
-	Payload MessageDataSend `json:"paylod"`
+
+type MessageNotInDb struct {
+	MessageId string `json:"message_id"`
+	Info      string `json:"info"`
 }
 
 func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,21 +60,79 @@ func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) 
 	for {
 
 		messageType, data, err := conn.ReadMessage()
+
 		if err != nil {
 			log.Printf("Error reading message: %v", err)
+			break
 		}
 
 		switch messageType {
 
 		case websocket.TextMessage:
 
-			api.database.InsertMessage()
+			var messagePayload MessagePayload
+
+			if err := json.Unmarshal(data, &messagePayload); err != nil {
+				log.Printf("Invalid payload sent: %v", err)
+				return
+			}
+
+			var messageId = uuid.New().String()
+
+			//broadcast message before insert for latency
+
+			now := time.Now()
+
+			message := database.Message{
+				MessageID:      messageId,
+				FriendshipID:   messagePayload.FriendshipID,
+				SenderUsername: messagePayload.SenderUsername,
+				MessageType:    messagePayload.MessageType,
+				TextContent:    messagePayload.TextContent,
+				Media:          database.Media(messagePayload.Media),
+				CreatedAt:      now.String(),
+				ModifiedAt:     now.String(),
+			}
+
+			byteResponse, err := json.Marshal(message)
+
+			if err != nil {
+				log.Printf("failed to parse response to byte: %v", err)
+				return
+			}
+
+			if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+				log.Panicf("socket publish failed: %t", err)
+			}
+
+			err = api.database.InsertMessage(r.Context(), messageId, messagePayload.FriendshipID, messagePayload.SenderUsername, message.MessageType, message.TextContent, now)
+
+			if err != nil {
+
+				info := MessageNotInDb{
+					MessageId: messageId,
+					Info:      "failed to insert with this id in db please remove",
+				}
+
+				byteResponse, err := json.Marshal(info)
+
+				if err != nil {
+					log.Printf("failed to parse response 2 to byte: %v", err)
+					return
+				}
+
+				if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+					log.Panicf("socket publish failed: %g", err)
+				}
+
+			}
 
 		case websocket.BinaryMessage:
 
+			
+
 		default:
-
-
+			log.Printf("cannot determin incoming socket data type: %v", err)
 		}
 
 	}

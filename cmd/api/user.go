@@ -149,7 +149,7 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 
 	currentTimeString := strconv.Itoa(int(currentTime)) + filepath.Ext(fileHeader.Filename)
 
-	destinationFile, err := os.Create("C:\\Users\\5557\\Desktop\\nkata_uploads\\profile\\" + currentTimeString)
+	destinationFile, err := os.Create("/home/ifeanyi/nkata_storage/profile_storage/" + currentTimeString)
 
 	if err != nil {
 		internalServer(w, r, err)
