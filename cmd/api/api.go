@@ -77,26 +77,27 @@ func IntiApi(db *sql.DB) {
 
 			r.Post("/group/create", apiService.CreateGroup)
 			r.Get("/group/get-members/{id}", apiService.GetGroupMembers)
-			r.Put("/group/update",apiService.UpdateGroup)
-			r.Post("/group/upload-group-pic",apiService.UploadGroupPic)
-			r.Post("/group/add-member",apiService.AddGroupMember)
-			r.Delete("/group/remove-member",apiService.RemoveGroupMember)
+			r.Put("/group/update", apiService.UpdateGroup)
+			r.Post("/group/upload-group-pic", apiService.UploadGroupPic)
+			r.Post("/group/add-member", apiService.AddGroupMember)
+			r.Delete("/group/remove-member", apiService.RemoveGroupMember)
 			r.Delete("/group/delete/{id}", apiService.DeleteGroup)
 		})
 
-		r.Route("/message",func(r chi.Router) {
+		r.Route("/message", func(r chi.Router) {
 			r.Use(HandleJWTAuth)
-			r.Get("/{message_id}",apiService.GetMessageByMessageId)
+			r.Get("/{message_id}", apiService.GetMessageByMessageId)
 			// r.Post("/upload-media/{friendship_id}",)
-			r.Post("/ws/{friendship_id}",apiService.MessageWsHandler)
-			r.Get("/get-messages/{friendship_id}",apiService.GetMessages)
-			r.Get("/search-messages/{friendship_id}",apiService.SearchMessages)
-			r.Delete("/{message_id}",apiService.DeleteMessageByMessageId)
+			r.Post("/ws/{friendship_id}", apiService.MessageWsHandler)
+			r.Get("/get-messages/{friendship_id}", apiService.GetMessages)
+			r.Get("/search-messages/{friendship_id}", apiService.SearchMessages)
+			r.Delete("/{message_id}", apiService.DeleteMessageByMessageId)
 		})
 
 		r.Route("/media", func(r chi.Router) {
 			r.Get("/profiles/{img_name}", apiService.LoadProfilPic)
-			r.Get("/groups/{img_name}",apiService.LoadGroupPic)
+			r.Get("/groups/{img_name}", apiService.LoadGroupPic)
+			r.Get("/chat/{img_name}", apiService.LoadMessagefile)
 		})
 
 		r.Route("/auth", func(r chi.Router) {

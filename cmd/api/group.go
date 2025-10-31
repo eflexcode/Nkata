@@ -379,7 +379,7 @@ func (api *ApiService) UploadGroupPic(w http.ResponseWriter, r *http.Request) {
 
 	currentTimeString := strconv.Itoa(int(currentTime)) + filepath.Ext(fileHeader.Filename)
 
-	destinationFile, err := os.Create("C:\\Users\\5557\\Desktop\\nkata_uploads\\group\\" + currentTimeString)
+	destinationFile, err := os.Create("/home/ifeanyi/nkata_storage/group/" + currentTimeString)
 
 	if err != nil {
 		internalServer(w, r, err)
@@ -430,7 +430,7 @@ func (api *ApiService) UploadGroupPic(w http.ResponseWriter, r *http.Request) {
 func (api *ApiService) LoadGroupPic(w http.ResponseWriter, r *http.Request) {
 
 	filename := chi.URLParam(r, "img_name")
-	url := "C:\\Users\\5557\\Desktop\\nkata_uploads\\group\\" + filename
+	url := "/home/ifeanyi/nkata_storage/group/" + filename
 	file, err := os.Open(url)
 
 	if err != nil {

@@ -8,8 +8,10 @@ import (
 	"log"
 	"main/database"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -131,13 +133,15 @@ func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) 
 
 		case websocket.BinaryMessage:
 
-			strconv.Itoa(messageType).
+			fileTypeHttp := http.DetectContentType(data)
 
-			io.Reader.Read(data)
+			var fileTypeHttpSplit = strings.Split(fileTypeHttp, "/")
+
+			fileExtention := "." + fileTypeHttpSplit[1]
 
 			currentTime := time.Now().UnixMilli()
 
-			currentTimeString := strconv.Itoa(int(currentTime)) + filepath.Ext(fileHeader.Filename)
+			currentTimeString := strconv.Itoa(int(currentTime)) + fileExtention
 
 			destinationFile, err := os.Create("/home/ifeanyi/nkata_storage/chat_storage/" + currentTimeString)
 
@@ -148,18 +152,72 @@ func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) 
 
 			defer destinationFile.Close()
 
-			_, err = file.Seek(0, io.SeekStart)
-
+			i, err := destinationFile.Write(data)
 			if err != nil {
 				internalServer(w, r, err)
 				return
 			}
 
-			_, err = io.Copy(destinationFile, file)
-
+			if i == 0 {
+				internalServer(w, r, errors.New("failed to write file sent"))
+				return
+			}
+			ctx := r.Context()
+			username, err := getUsernameFromCtx(ctx)
 			if err != nil {
 				internalServer(w, r, err)
 				return
+			}
+			now := time.Now()
+			friendshipId := chi.URLParam(r, "friendship_id")
+
+			var messageId = uuid.New().String()
+
+			//broadcast message before insert for latency
+
+			url := "localhost:5557/v1/media/chat/" + currentTimeString
+
+			message := database.Message{
+				MessageID:      messageId,
+				FriendshipID:   friendshipId,
+				SenderUsername: username,
+				MessageType:    "MessageChat",
+				Media:          database.Media{MediaUrl: url, MediaType: fileExtention},
+				CreatedAt:      now.String(),
+				ModifiedAt:     now.String(),
+			}
+
+			byteResponse, err := json.Marshal(message)
+
+			if err != nil {
+				log.Printf("failed to parse response to byte: %v", err)
+				return
+			}
+
+			if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+				log.Panicf("socket publish failed: %t", err)
+			}
+
+			err = api.database.InsertMessageMedia(ctx, messageId, friendshipId, username, "MessageChat", url, fileExtention, now)
+			
+			if err != nil {
+
+				info := MessageNotInDb{
+					MessageId: messageId,
+					Info:      "failed to insert with this id in db please remove",
+				}
+
+				byteResponse, err := json.Marshal(info)
+
+				if err != nil {
+					log.Printf("failed to parse response 2 to byte: %v", err)
+					return
+				}
+
+				if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+					log.Panicf("socket publish failed: %g", err)
+				}
+
 			}
 
 		default:
@@ -189,6 +247,33 @@ func (api *ApiService) GetMessageByMessageId(w http.ResponseWriter, r *http.Requ
 
 	writeJson(w, http.StatusOK, message)
 
+}
+
+// @Summary Download Group Pic
+// @Description Responds with json
+// @Tags Media
+// @Param img_name path string true "file name"
+// @Produce octet-stream
+// @Success 200 {file} file
+// @Failure 404 {object} errorslope
+// @Router /v1/media/chat/{img_name} [get]
+func (api *ApiService) LoadMessagefile(w http.ResponseWriter, r *http.Request) {
+
+	filename := chi.URLParam(r, "img_name")
+	url := "/home/ifeanyi/nkata_storage/chat_storage/" + filename
+	file, err := os.Open(url)
+
+	if err != nil {
+		notFound(w, r, errors.New("the system cannot find the file specified"))
+		return
+	}
+
+	defer file.Close()
+
+	w.Header().Set("Content-Disposition", "attachment; filename= "+filename)
+	w.Header().Set("Content-Type", "application/octet-stream")
+
+	http.ServeContent(w, r, filename, time.Time{}, file)
 }
 
 func (api *ApiService) GetMessages(w http.ResponseWriter, r *http.Request) {

@@ -23,7 +23,7 @@ const (
 
 type Media struct {
 	MediaUrl  string `json:"media_url"`
-	MediaType string `json:"media_type"` // NoMedia,Image,Video,Audio,Doc
+	MediaType string `json:"media_type"` // NoMedia,made it file extention
 }
 
 type MessageType int
@@ -59,7 +59,7 @@ func (d *DataRepository) InsertMessage(cxt context.Context,MessageID, Friendship
 	return err
 }
 
-func (d *DataRepository) InsertMessageMedia(cxt context.Context,MessageID, FriendshipID, SenderUsername, MessageType, TextContent, MediaUrl, MediaType string,now time.Time) error {
+func (d *DataRepository) InsertMessageMedia(cxt context.Context,MessageID, FriendshipID, SenderUsername, MessageType, MediaUrl, MediaType string,now time.Time) error {
 
 	query := `INSERT INTO message(message_id,friendship_id,sender_username,message_type,text_content,media_url,media_type,modified_at,created_at)`
 
@@ -67,11 +67,11 @@ func (d *DataRepository) InsertMessageMedia(cxt context.Context,MessageID, Frien
 		return errors.New("MessageType is invalide")
 	}
 
-	if MediaType != "NoMedia" && MediaType != "Image" && MediaType != "Audio" && MediaType != "Video" && MediaType != "Doc" {
-		return errors.New("MediaType is invalide")
-	}
+	// if MediaType != "NoMedia" && MediaType != "Image" && MediaType != "Audio" && MediaType != "Video" && MediaType != "Doc" {
+	// 	return errors.New("MediaType is invalide")
+	// }
 
-	_, err := d.db.ExecContext(cxt, query, FriendshipID, SenderUsername, MessageType, TextContent, MediaUrl, MediaType,now,now)
+	_, err := d.db.ExecContext(cxt, query, FriendshipID, SenderUsername, MessageType, "", MediaUrl, MediaType,now,now)
 
 	return err
 }
