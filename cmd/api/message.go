@@ -4,11 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"io"
 	"log"
 	"main/database"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -50,6 +48,16 @@ type MessageNotInDb struct {
 	Info      string `json:"info"`
 }
 
+// @Summary Message ws connection
+// @Description Responds with json
+// @Tags Message
+// @Produce json
+// @Success 200 {object} database.Message
+// @Produce octet-stream
+// @Success 200 {file} file
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/message/ws/{friendship_id} [get]
 func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgradeConn.Upgrade(w, r, nil)
@@ -227,7 +235,15 @@ func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 }
-
+// @Summary Get Messages with message_id
+// @Description Responds with json
+// @Tags Message
+// @Param message_id path string true "message_id"
+// @Produce json
+// @Success 200 {object} database.Message
+// @Failure 404 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/message/get/{message_id} [get]
 func (api *ApiService) GetMessageByMessageId(w http.ResponseWriter, r *http.Request) {
 
 	id := chi.URLParam(r, "message_id")
@@ -249,7 +265,7 @@ func (api *ApiService) GetMessageByMessageId(w http.ResponseWriter, r *http.Requ
 
 }
 
-// @Summary Download Group Pic
+// @Summary Download chat Pic
 // @Description Responds with json
 // @Tags Media
 // @Param img_name path string true "file name"
@@ -276,6 +292,18 @@ func (api *ApiService) LoadMessagefile(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, filename, time.Time{}, file)
 }
 
+// @Summary Get Messages with friendship id
+// @Description Responds with json
+// @Tags Message
+// @Param friendship_id path string true "friendship id"
+// @Param page query string true "current page if any"
+// @Param limit query string true "page max lenght if any"
+// @Produce json
+// @Success 200 {object} database.PaginatedResponse
+// @Failure 404 {object} errorslope
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/message/get-messages/{friendship_id} [get]
 func (api *ApiService) GetMessages(w http.ResponseWriter, r *http.Request) {
 
 	id := chi.URLParam(r, "friendship_id")
@@ -302,6 +330,16 @@ func (api *ApiService) GetMessages(w http.ResponseWriter, r *http.Request) {
 	writeJson(w, http.StatusOK, result)
 }
 
+// @Summary Delete Messages with message_id
+// @Description Responds with json
+// @Tags Message
+// @Param message_id path string true "message_id"
+// @Produce json
+// @Success 200 {object} StandardResponse
+// @Failure 404 {object} errorslope
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/message/delete/{message_id} [delete]
 func (api *ApiService) DeleteMessageByMessageId(w http.ResponseWriter, r *http.Request) {
 
 	id := chi.URLParam(r, "message_id")
@@ -324,6 +362,21 @@ func (api *ApiService) DeleteMessageByMessageId(w http.ResponseWriter, r *http.R
 
 }
 
+// @Summary Search Messages with friendship_id
+// @Description Responds with json
+// @Tags Message
+// @Param friendship_id path string true "friendship id"
+// @Param page query string true "current page if any"
+// @Param limit query string true "page max lenght if any"
+// @Param q query string true "query text"
+// @Param start_at query string true "start date"
+// @Param end_at query string true "end date"
+// @Produce json
+// @Success 200 {object} database.PaginatedResponse
+// @Failure 404 {object} errorslope
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/message/search-messages/{friendship_id} [get]
 func (api *ApiService) SearchMessages(w http.ResponseWriter, r *http.Request) {
 
 	id := chi.URLParam(r, "friendship_id")

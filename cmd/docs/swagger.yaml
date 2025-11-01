@@ -117,6 +117,37 @@ definitions:
       status:
         type: integer
     type: object
+  database.Media:
+    properties:
+      media_type:
+        description: NoMedia,made it file extention
+        type: string
+      media_url:
+        type: string
+    type: object
+  database.Message:
+    properties:
+      created_at:
+        type: string
+      friendship_id:
+        description: put groupd id here if group
+        type: string
+      id:
+        type: integer
+      media:
+        $ref: '#/definitions/database.Media'
+      message_id:
+        type: string
+      message_type:
+        description: MessageChat,MessageRaction,MessageInfo
+        type: string
+      modified_at:
+        type: string
+      sender_username:
+        type: string
+      text_content:
+        type: string
+    type: object
   database.PaginatedResponse:
     properties:
       data: {}
@@ -790,6 +821,29 @@ paths:
       summary: Send friend request
       tags:
       - Friendship
+  /v1/media/chat/{img_name}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: file name
+        in: path
+        name: img_name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Download chat Pic
+      tags:
+      - Media
   /v1/media/groups/{img_name}:
     get:
       description: Responds with json
@@ -836,6 +890,183 @@ paths:
       summary: Download Profil Pic
       tags:
       - Media
+  /v1/message/delete/{message_id}:
+    delete:
+      description: Responds with json
+      parameters:
+      - description: message_id
+        in: path
+        name: message_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Delete Messages with message_id
+      tags:
+      - Message
+  /v1/message/get-messages/{friendship_id}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: friendship id
+        in: path
+        name: friendship_id
+        required: true
+        type: string
+      - description: current page if any
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: page max lenght if any
+        in: query
+        name: limit
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.PaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Get Messages with friendship id
+      tags:
+      - Message
+  /v1/message/get/{message_id}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: message_id
+        in: path
+        name: message_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Get Messages with message_id
+      tags:
+      - Message
+  /v1/message/search-messages/{friendship_id}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: friendship id
+        in: path
+        name: friendship_id
+        required: true
+        type: string
+      - description: current page if any
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: page max lenght if any
+        in: query
+        name: limit
+        required: true
+        type: string
+      - description: query text
+        in: query
+        name: q
+        required: true
+        type: string
+      - description: start date
+        in: query
+        name: start_at
+        required: true
+        type: string
+      - description: end date
+        in: query
+        name: end_at
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.PaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Search Messages with friendship_id
+      tags:
+      - Message
+  /v1/message/ws/{friendship_id}:
+    get:
+      description: Responds with json
+      produces:
+      - application/json
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Message ws connection
+      tags:
+      - Message
   /v1/user/:
     get:
       description: Responds with json

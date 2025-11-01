@@ -966,6 +966,41 @@
                 }
             }
         },
+        "/v1/media/chat/{img_name}": {
+            "get": {
+                "description": "Responds with json",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Media"
+                ],
+                "summary": "Download chat Pic",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file name",
+                        "name": "img_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/media/groups/{img_name}": {
             "get": {
                 "description": "Responds with json",
@@ -1029,6 +1064,270 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/message/delete/{message_id}": {
+            "delete": {
+                "description": "Responds with json",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Delete Messages with message_id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "message_id",
+                        "name": "message_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.StandardResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/message/get-messages/{friendship_id}": {
+            "get": {
+                "description": "Responds with json",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Get Messages with friendship id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "friendship id",
+                        "name": "friendship_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "current page if any",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "page max lenght if any",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/message/get/{message_id}": {
+            "get": {
+                "description": "Responds with json",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Get Messages with message_id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "message_id",
+                        "name": "message_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.Message"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/message/search-messages/{friendship_id}": {
+            "get": {
+                "description": "Responds with json",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Search Messages with friendship_id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "friendship id",
+                        "name": "friendship_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "current page if any",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "page max lenght if any",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "query text",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "start date",
+                        "name": "start_at",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "end date",
+                        "name": "end_at",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.PaginatedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/message/ws/{friendship_id}": {
+            "get": {
+                "description": "Responds with json",
+                "produces": [
+                    "application/json",
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Message ws connection",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.errorslope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/api.errorslope"
                         }
@@ -1515,6 +1814,52 @@
                 },
                 "status": {
                     "type": "integer"
+                }
+            }
+        },
+        "database.Media": {
+            "type": "object",
+            "properties": {
+                "media_type": {
+                    "description": "NoMedia,made it file extention",
+                    "type": "string"
+                },
+                "media_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "database.Message": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "friendship_id": {
+                    "description": "put groupd id here if group",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "media": {
+                    "$ref": "#/definitions/database.Media"
+                },
+                "message_id": {
+                    "type": "string"
+                },
+                "message_type": {
+                    "description": "MessageChat,MessageRaction,MessageInfo",
+                    "type": "string"
+                },
+                "modified_at": {
+                    "type": "string"
+                },
+                "sender_username": {
+                    "type": "string"
+                },
+                "text_content": {
+                    "type": "string"
                 }
             }
         },
