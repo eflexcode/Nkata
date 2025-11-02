@@ -37,7 +37,7 @@ const (
 type Message struct {
 	ID             int64  `json:"id"`
 	MessageID      string `json:"message_id"`
-	FriendshipID   string  `json:"friendship_id"` //put groupd id here if group
+	FriendshipID   string `json:"friendship_id"` //put groupd id here if group
 	SenderUsername string `json:"sender_username"`
 	MessageType    string `json:"message_type"` //MessageChat,MessageRaction,MessageInfo
 	TextContent    string `json:"text_content"`
@@ -46,7 +46,7 @@ type Message struct {
 	ModifiedAt     string `json:"modified_at"`
 }
 
-func (d *DataRepository) InsertMessage(cxt context.Context,MessageID, FriendshipID, SenderUsername, MessageType, TextContent string,now time.Time) error {
+func (d *DataRepository) InsertMessage(cxt context.Context, MessageID, FriendshipID, SenderUsername, MessageType, TextContent string, now time.Time) error {
 
 	query := `INSERT INTO message(message_id,friendship_id,sender_username,message_type,text_content,media_url,media_type,modified_at,created_at)`
 
@@ -59,7 +59,7 @@ func (d *DataRepository) InsertMessage(cxt context.Context,MessageID, Friendship
 	return err
 }
 
-func (d *DataRepository) InsertMessageMedia(cxt context.Context,MessageID, FriendshipID, SenderUsername, MessageType, MediaUrl, MediaType string,now time.Time) error {
+func (d *DataRepository) InsertMessageMedia(cxt context.Context, MessageID, FriendshipID, SenderUsername, MessageType, MediaUrl, MediaType string, now time.Time) error {
 
 	query := `INSERT INTO message(message_id,friendship_id,sender_username,message_type,text_content,media_url,media_type,modified_at,created_at)`
 
@@ -71,7 +71,7 @@ func (d *DataRepository) InsertMessageMedia(cxt context.Context,MessageID, Frien
 	// 	return errors.New("MediaType is invalide")
 	// }
 
-	_, err := d.db.ExecContext(cxt, query, FriendshipID, SenderUsername, MessageType, "", MediaUrl, MediaType,now,now)
+	_, err := d.db.ExecContext(cxt, query, FriendshipID, SenderUsername, MessageType, "", MediaUrl, MediaType, now, now)
 
 	return err
 }
@@ -98,7 +98,7 @@ func (d *DataRepository) GetMessageById(cxt context.Context, MessageID string) (
 
 	var message Message
 
-	row.Scan(&message.ID,&message.MessageID, &message.FriendshipID, &message.SenderUsername, &message.TextContent, &message.Media.MediaUrl, &message.Media.MediaType, &message.CreatedAt, &message.ModifiedAt)
+	row.Scan(&message.ID, &message.MessageID, &message.FriendshipID, &message.SenderUsername, &message.TextContent, &message.Media.MediaUrl, &message.Media.MediaType, &message.CreatedAt, &message.ModifiedAt)
 
 	return &message, nil
 }
@@ -130,7 +130,7 @@ func (d *DataRepository) GetMessages(cxt context.Context, FriendshipID string, p
 
 		var message Message
 
-		row.Scan(&message.ID,&message.MessageID, &message.FriendshipID, &message.SenderUsername, &message.TextContent, &message.Media.MediaUrl, &message.Media.MediaType, &message.CreatedAt, &message.ModifiedAt)
+		row.Scan(&message.ID, &message.MessageID, &message.FriendshipID, &message.SenderUsername, &message.TextContent, &message.Media.MediaUrl, &message.Media.MediaType, &message.CreatedAt, &message.ModifiedAt)
 		messages = append(messages, message)
 	}
 
@@ -172,7 +172,7 @@ func (d *DataRepository) SearchMessages(cxt context.Context, FriendshipID, searc
 
 		var message Message
 
-		row.Scan(&message.ID, &message.MessageID,&message.FriendshipID, &message.SenderUsername, &message.TextContent, &message.Media.MediaUrl, &message.Media.MediaType, &message.CreatedAt, &message.ModifiedAt)
+		row.Scan(&message.ID, &message.MessageID, &message.FriendshipID, &message.SenderUsername, &message.TextContent, &message.Media.MediaUrl, &message.Media.MediaType, &message.CreatedAt, &message.ModifiedAt)
 		messages = append(messages, message)
 	}
 

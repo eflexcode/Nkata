@@ -35,6 +35,7 @@ func IntiApi(db *sql.DB) {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(90 * time.Second))
+	r.Use(HandleRateLimiter)
 
 	uRepo := database.NewUserRepository(db)
 

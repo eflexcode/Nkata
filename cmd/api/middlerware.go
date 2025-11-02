@@ -10,6 +10,16 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+
+
+func HandleRateLimiter(h http.Handler) http.Handler{
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+
+
+	})
+}
+
 func HandleJWTAuth(h http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
