@@ -1,24 +1,25 @@
 package api
 
 import (
-	"database/sql"
 	"log"
 	"main/database"
 	"net/http"
 	"time"
 
+	_ "main/cmd/docs"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
-	_ "main/cmd/docs"
 )
 
 type ApiService struct {
 	database *database.DataRepository
+	config *Config
 }
 
-func NewRepos(userRepo *database.DataRepository) *ApiService {
-	return &ApiService{database: userRepo}
+func NewRepos(userRepo *database.DataRepository,config *Config) (*ApiService) {
+	return &ApiService{database: userRepo,config: config}
 }
 
 // @title Example API
@@ -26,20 +27,29 @@ func NewRepos(userRepo *database.DataRepository) *ApiService {
 // @description This is a sample server using Chi and Swagger.
 // @host localhost:8080
 // @BasePath /api/v1
-func IntiApi(db *sql.DB) {
+func IntiApi(config *Config) {
+
+	db, err := database.ConnectDatabase(config.DatabaseConfig)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+	log.Print("Database conection established")
 
 	r := chi.NewRouter()
+
+	uRepo := database.NewUserRepository(db)
+
+	apiService := NewRepos(uRepo,config)
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(90 * time.Second))
-	r.Use(HandleRateLimiter)
-
-	uRepo := database.NewUserRepository(db)
-
-	apiService := NewRepos(uRepo)
+	r.Use(apiService.HandleRateLimiter)
 
 	r.Route("/v1", func(r chi.Router) {
 
@@ -125,7 +135,7 @@ func IntiApi(db *sql.DB) {
 
 	log.Printf("Nkata server started on port: 5557")
 
-	err := http.ListenAndServe(":5557", r)
+	err = http.ListenAndServe(":5557", r)
 
 	if err != nil {
 		log.Printf("Nkata server failed to start")

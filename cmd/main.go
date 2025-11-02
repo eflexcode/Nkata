@@ -8,14 +8,6 @@ import (
 	"main/internal/evn"
 )
 
-type RateLimitConfig struct {
-}
-
-type Config struct {
-	DatabaseConfig  database.DatabaseConfig
-	RateLimitConfig RateLimitConfig
-}
-
 // @title Nkata API
 // @version 1.0
 // @description Nkata monolight server
@@ -27,25 +19,19 @@ func main() {
 		log.Print("Failed to load .env file using hard coded defaults")
 	}
 
-	// databaseConfig :=
-
-	config := Config{
+	config := api.Config{
 		DatabaseConfig: database.DatabaseConfig{
 			Addr:         evn.GetString("postgres://postgres:12345@localhost/nkata?sslmode=disable", "DATABASE_ADDR"),
 			MaxOpenConn:  evn.GetInt(20, "MAX_DATABASE_OPEN_CONN"),
 			MaxIdealConn: evn.GetInt(20, "MAX_DATABASE_IDEAL_CONN"),
 			MaxIdealTime: "15m",
 		},
+		RateLimitConfig: api.RateLimitConfig{
+			MaxRequestPerMin: int64(evn.GetInt(3,"RateLimitMaxReq")),
+		},
 	}
 
-	db, err := database.ConnectDatabase(config.DatabaseConfig)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer db.Close()
-	log.Print("Database conection established")
-	api.IntiApi(db)
+	
+	api.IntiApi(&config)
 
 }
