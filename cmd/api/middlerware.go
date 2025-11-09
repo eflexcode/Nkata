@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	// "fmt"
 	"log"
 	"main/internal/evn"
 	"net/http"
@@ -31,13 +32,11 @@ func (api *ApiService) HandleRateLimiter(h http.Handler) http.Handler {
 			mutex.Lock()
 			for ip, client := range clientRequests {
 
-				difference := client.LastSeenAt.Sub(time.Now())
+				// log.Println("ip: ", ip)
+				// log.Println("time since: " + fmt.Sprintf("%f", time.Since(client.LastSeenAt).Seconds()) + "5 minute: " + fmt.Sprintf("%g", 5*time.Minute.Seconds()))
 
-				if difference > 5*time.Minute {
+				if time.Since(client.LastSeenAt).Seconds() >= 5*time.Minute.Seconds() {
 					delete(clientRequests, ip)
-				}
-				if time.Since(client.LastSeenAt) > 5*time.Minute {
-
 				}
 			}
 			mutex.Unlock()
@@ -67,7 +66,7 @@ func (api *ApiService) HandleRateLimiter(h http.Handler) http.Handler {
 				clientRequests[ip] = &ClientRequest{
 					LastSeenAt: time.Now(),
 				}
-				tooManyRequest(w, r, errors.New("to many request limit reached"))
+				tooManyRequest(w, r, errors.New("to many request limit reached for time frame"))
 				return
 			}
 		} else {
@@ -79,7 +78,7 @@ func (api *ApiService) HandleRateLimiter(h http.Handler) http.Handler {
 			h.ServeHTTP(w, r)
 		}
 
-		log.Default().Println("Limiter", "method", r.Method, "path", r.URL.Path, "ip: "+ip+"requests "+strconv.Itoa(int(0)))
+		// log.Default().Println("Limiter", "method", r.Method, "path", r.URL.Path, "ip: "+ip+"requests "+strconv.Itoa(int(0)))
 
 	})
 }

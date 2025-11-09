@@ -27,7 +27,7 @@ func main() {
 			MaxIdealTime: "15m",
 		},
 		RateLimitConfig: api.RateLimitConfig{
-			MaxRequestPerMin: int64(evn.GetInt(3,"RateLimitMaxReq")),
+			MaxRequestPerMin: int64(evn.GetInt(3000,"RateLimitMaxReq")),
 		},
 	}
 
