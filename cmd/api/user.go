@@ -252,6 +252,8 @@ func (api *ApiService) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	api.database.GetByUsername(r.Context(),username)
+
 	s := StandardResponse{
 		Status:  http.StatusOK,
 		Message: "user details updated successfuly",

@@ -110,7 +110,7 @@ func (r *DataRepository) GetByUsername(ctx context.Context, username string) (*U
 
 func (r *DataRepository) UpdateUser(ctx context.Context, username, displayName, bio string) error {
 
-	queryBoth := `UPDATE users SET display_name = $1, bio =$2 WHERE username = $3?`
+	queryBoth := `UPDATE users SET display_name = $1, bio =$2 WHERE username = $3`
 	queryBio := `UPDATE users SET bio = $1 WHERE username = $2`
 	queryDisplay := `UPDATE users SET display_name = $1 WHERE username = $2`
 

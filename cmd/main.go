@@ -27,11 +27,15 @@ func main() {
 			MaxIdealTime: "15m",
 		},
 		RateLimitConfig: api.RateLimitConfig{
-			MaxRequestPerMin: int64(evn.GetInt(3000,"RateLimitMaxReq")),
+			MaxRequestPerMin: int64(evn.GetInt(3000, "RateLimitMaxReq")),
+		},
+		RedisConfig: api.RedisConfig{
+			Addre:    "localhost:6379",
+			Password: "",
+			Db:       0,
 		},
 	}
 
-	
 	api.IntiApi(&config)
 
 }

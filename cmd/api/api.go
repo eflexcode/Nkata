@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"log"
 	"main/database"
 	"net/http"
@@ -10,16 +11,18 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/redis/go-redis/v9"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type ApiService struct {
 	database *database.DataRepository
-	config *Config
+	config   *Config
+	rClient *redis.Client
 }
 
-func NewRepos(userRepo *database.DataRepository,config *Config) (*ApiService) {
-	return &ApiService{database: userRepo,config: config}
+func NewRepos(userRepo *database.DataRepository, config *Config,rClient *redis.Client) *ApiService {
+	return &ApiService{database: userRepo, config: config,rClient: rClient}
 }
 
 // @title Example API
@@ -38,11 +41,27 @@ func IntiApi(config *Config) {
 	defer db.Close()
 	log.Print("Database conection established")
 
+	redisOption := redis.Options{
+		Addr: config.RedisConfig.Addre,
+		Password: config.RedisConfig.Password,
+		DB: config.RedisConfig.Db,
+	}
+
+	redisClient := redis.NewClient(&redisOption)
+
+	result,err :=  redisClient.Ping(context.Background()).Result()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Print("Redis conection established server saye "+result)
+
 	r := chi.NewRouter()
 
 	uRepo := database.NewUserRepository(db)
 
-	apiService := NewRepos(uRepo,config)
+	apiService := NewRepos(uRepo, config,redisClient)
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -59,7 +78,7 @@ func IntiApi(config *Config) {
 				Message string `json:"message"`
 			}
 
-			writeJson(w, http.StatusOK, ping{Message: "pined"})
+			writeJson(w, http.StatusOK, ping{Message: "pong"})
 		})
 
 		r.Get("/swagger/*", httpSwagger.WrapHandler)
