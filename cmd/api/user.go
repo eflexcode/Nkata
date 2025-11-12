@@ -2,9 +2,12 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"image"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -70,7 +73,6 @@ func (api *ApiService) GetByUsername(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
 // GetUser
 // @Summary Search User
 // @Description Responds with json
@@ -92,7 +94,7 @@ func (api *ApiService) GetByUsernameSearch(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 
 		if err.Error() == "sql: no rows in result set" {
-			notFound(w,r,errors.New("no user found with username: "+username))
+			notFound(w, r, errors.New("no user found with username: "+username))
 			return
 		}
 
@@ -103,7 +105,6 @@ func (api *ApiService) GetByUsernameSearch(w http.ResponseWriter, r *http.Reques
 	writeJson(w, http.StatusOK, user)
 
 }
-
 
 // UploadProfilPic
 // @Summary Upload Profil Pic
@@ -118,7 +119,7 @@ func (api *ApiService) GetByUsernameSearch(w http.ResponseWriter, r *http.Reques
 // @Security ApiKeyAuth
 // @Router /v1/user/upload-profile-picture [post]
 func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
-	
+
 	ctx := r.Context()
 	username, err := getUsernameFromCtx(ctx)
 
@@ -252,14 +253,28 @@ func (api *ApiService) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.database.GetByUsername(r.Context(),username)
-
 	s := StandardResponse{
 		Status:  http.StatusOK,
 		Message: "user details updated successfuly",
 	}
 
 	writeJson(w, http.StatusOK, s)
+
+	user, err := api.database.GetByUsername(r.Context(), username)
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	userJson, err := json.Marshal(user)
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	redisKey := fmt.Sprintf("user:%g", username)
+
+	api.rClient.SetEx(r.Context(), redisKey, userJson, time.Minute*4)
 
 }
 
