@@ -106,6 +106,7 @@ func IntiApi(config *Config) {
 			r.Get("/request/get-received", apiService.GetFriendRequestRecieved)
 
 			r.Post("/group/create", apiService.CreateGroup)
+			r.Post("/group/get/{id}", apiService.GetGroupById)
 			r.Get("/group/get-members/{id}", apiService.GetGroupMembers)
 			r.Put("/group/update", apiService.UpdateGroup)
 			r.Post("/group/upload-group-pic", apiService.UploadGroupPic)

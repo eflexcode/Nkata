@@ -8,6 +8,7 @@ import (
 	"image"
 	"io"
 	"log"
+	"main/database"
 	"math/rand"
 	"net/http"
 	"os"
@@ -16,6 +17,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/redis/go-redis/v9"
 
 	_ "image/gif"
 	_ "image/jpeg"
@@ -89,6 +91,13 @@ func (api *ApiService) GetByUsernameSearch(w http.ResponseWriter, r *http.Reques
 
 	username := chi.URLParam(r, "username")
 
+	rUser, err := getRedisUser(r.Context(), username, api.rClient)
+
+	if err != nil {
+		writeJson(w, http.StatusOK, rUser)
+		return
+	}
+
 	user, err := api.database.GetByUsername(r.Context(), username)
 
 	if err != nil {
@@ -103,7 +112,7 @@ func (api *ApiService) GetByUsernameSearch(w http.ResponseWriter, r *http.Reques
 	}
 
 	writeJson(w, http.StatusOK, user)
-
+	setRedisUser(r.Context(), api.database, username, api.rClient)
 }
 
 // UploadProfilPic
@@ -188,6 +197,8 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJson(w, http.StatusOK, s)
+
+	setRedisUser(r.Context(), api.database, username, api.rClient)
 }
 
 // LoadProfilPic
@@ -260,21 +271,7 @@ func (api *ApiService) Update(w http.ResponseWriter, r *http.Request) {
 
 	writeJson(w, http.StatusOK, s)
 
-	user, err := api.database.GetByUsername(r.Context(), username)
-
-	if err != nil {
-		log.Printf(err.Error())
-	}
-
-	userJson, err := json.Marshal(user)
-
-	if err != nil {
-		log.Printf(err.Error())
-	}
-
-	redisKey := fmt.Sprintf("user:%g", username)
-
-	api.rClient.SetEx(r.Context(), redisKey, userJson, time.Minute*4)
+	setRedisUser(r.Context(), api.database, username, api.rClient)
 
 }
 
@@ -400,5 +397,49 @@ func (api *ApiService) AddEmailVerify(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJson(w, http.StatusOK, s)
+
+}
+
+func setRedisUser(ctx context.Context, database *database.DataRepository, username string, redisClient *redis.Client) {
+	user, err := database.GetByUsername(ctx, username)
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	userJson, err := json.Marshal(user)
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	redisKey := fmt.Sprintf("user:%g", username)
+
+	redisClient.SetEx(ctx, redisKey, userJson, time.Minute*4)
+}
+
+func getRedisUser(ctx context.Context, username string, redisClient *redis.Client) (*database.User, error) {
+
+	redisKey := fmt.Sprintf("user:%g", username)
+
+	userData, err := redisClient.Get(ctx, redisKey).Result()
+
+	if err == redis.Nil {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	var user database.User
+
+	if userData != "" {
+		err := json.Unmarshal([]byte(userData), &user)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &user, nil
 
 }

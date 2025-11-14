@@ -1,19 +1,26 @@
 package api
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"image"
 	"io"
+	"log"
+	"main/database"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/redis/go-redis/v9"
 )
 
 type CreatGroup struct {
@@ -86,6 +93,37 @@ func (api *ApiService) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJson(w, 200, s)
+
+}
+
+func (api *ApiService) GetGroupById(w http.ResponseWriter, r *http.Request) {
+
+	id := chi.URLParam(r, "id")
+	idInt, err := strconv.Atoi(id)
+
+	if err != nil {
+		badRequest(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	rGroup, err := getRedisGroup(ctx, idInt, api.rClient)
+
+	if err != nil {
+		writeJson(w, http.StatusOK, rGroup)
+		return
+	}
+
+	group, err := api.database.GetGroupById(ctx, int64(idInt))
+
+	if err != nil {
+		internalServer(w, r, errors.New("failed to get group"))
+		return
+	}
+
+	writeJson(w, http.StatusOK, group)
+	setRedisGroup(ctx,api.database,int64(idInt),api.rClient)
 
 }
 
@@ -331,6 +369,7 @@ func (api *ApiService) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJson(w, http.StatusOK, s)
+	setRedisGroup(ctx,api.database,int64(group.Id),api.rClient)
 }
 
 // @Summary Upload Group Pic
@@ -417,6 +456,7 @@ func (api *ApiService) UploadGroupPic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJson(w, http.StatusOK, s)
+	setRedisGroup(ctx,api.database,int64(idInt),api.rClient)
 }
 
 // @Summary Download Group Pic
@@ -444,4 +484,50 @@ func (api *ApiService) LoadGroupPic(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/octet-stream")
 
 	http.ServeContent(w, r, filename, time.Time{}, file)
+}
+
+func setRedisGroup(ctx context.Context, database *database.DataRepository, groupId int64, redisClient *redis.Client) {
+	group, err := database.GetGroupById(ctx, groupId)
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	userJson, err := json.Marshal(group)
+
+	if err != nil {
+		log.Printf(err.Error())
+	}
+
+	redisKey := fmt.Sprintf("user:%g", groupId)
+
+	redisClient.SetEx(ctx, redisKey, userJson, time.Minute*4)
+}
+
+func getRedisGroup(ctx context.Context, groupId int, redisClient *redis.Client) (*database.Group, error) {
+
+	redisKey := fmt.Sprintf("user:%g", groupId)
+
+	groupData, err := redisClient.Get(ctx, redisKey).Result()
+
+	if err == redis.Nil {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	var group database.Group
+
+	if groupData != "" {
+
+		err := json.Unmarshal([]byte(groupData), &group)
+
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
+	return &group, nil
+
 }
