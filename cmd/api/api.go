@@ -55,7 +55,7 @@ func IntiApi(config *Config) {
 		log.Fatal(err)
 	}
 
-	log.Print("Redis conection established server saye "+result)
+	log.Print("Redis conection established server says "+result)
 
 	r := chi.NewRouter()
 

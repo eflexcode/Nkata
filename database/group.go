@@ -31,7 +31,7 @@ type GroupMember struct {
 
 func (d *DataRepository) InsertGroup(ctx context.Context, name string) (int64, error) {
 
-	query := `INSERT INTO group(name,pic_url,description) VALUES($1,$2,$3) RETURNING id `
+	query := `INSERT INTO groupu(name,pic_url,description) VALUES($1,$2,$3) RETURNING id `
 
 	var id int64
 
@@ -42,7 +42,7 @@ func (d *DataRepository) InsertGroup(ctx context.Context, name string) (int64, e
 
 func (d *DataRepository) GetGroupById(cxt context.Context, id int64) (*Group, error) {
 
-	query := `SELECT * FROM group WHERE id = $1`
+	query := `SELECT * FROM groupu WHERE id = $1`
 
 	row, err := d.db.QueryContext(cxt, query, id)
 
@@ -65,10 +65,10 @@ func (d *DataRepository) GetGroupById(cxt context.Context, id int64) (*Group, er
 
 func (d *DataRepository) UpdateGroup(cxt context.Context, id int, name, description, picUrl string) error {
 
-	queryAll := `UPDATE group SET name = $1, description = $2,pic_url = $3 WHERE id = $4?`
-	queryPicUrl := `UPDATE group SET pic_url = $1 WHERE id = $2`
-	queryName := `UPDATE group SET name = $1 WHERE id = $2`
-	queryDescription := `UPDATE group SET description = $1 WHERE id = $2`
+	queryAll := `UPDATE groupu SET name = $1, description = $2,pic_url = $3 WHERE id = $4?`
+	queryPicUrl := `UPDATE groupu SET pic_url = $1 WHERE id = $2`
+	queryName := `UPDATE groupu SET name = $1 WHERE id = $2`
+	queryDescription := `UPDATE groupu SET description = $1 WHERE id = $2`
 
 	if name != "" && description != "" && picUrl != "" {
 		_, err := d.db.ExecContext(cxt, queryAll, name, description, picUrl)
@@ -100,7 +100,7 @@ func (d *DataRepository) UpdateGroup(cxt context.Context, id int, name, descript
 }
 
 func (d *DataRepository) DeleteGroup(ctx context.Context, id int64) error {
-	query := `DELETE FROM group WHERE id = $1`
+	query := `DELETE FROM groupu WHERE id = $1`
 
 	_, err := d.db.ExecContext(ctx, query, id)
 
@@ -120,7 +120,7 @@ func (d *DataRepository) InsertGroupMember(ctx context.Context, username string,
 
 func (d *DataRepository) GetGroupMemberByUsername(cxt context.Context, username string, id int) (*GroupMember, error) {
 
-	query := `SELECT * FROM group_member WHERE groud_id = $1 AND username = $2`
+	query := `SELECT * FROM group_member WHERE group_id = $1 AND username = $2`
 
 	row, err := d.db.QueryContext(cxt, query, id, username)
 
@@ -145,8 +145,8 @@ func (d *DataRepository) GetGroupMembersByGroupId(cxt context.Context, id, limit
 
 	var totalCount int64
 
-	query := `SELECT * FROM group_member WHERE groud_id = $1 LIMIT = $2 OFFSET = $3`
-	queryCount := `SELECT COUNT(*) FROM group_member WHERE groud_id = $1`
+	query := `SELECT * FROM group_member WHERE group_id = $1 LIMIT = $2 OFFSET = $3`
+	queryCount := `SELECT COUNT(*) FROM group_member WHERE group_id = $1`
 
 	if err := d.db.QueryRowContext(cxt, queryCount, id).Scan(&totalCount); err != nil {
 		return nil, err

@@ -96,6 +96,18 @@ func (api *ApiService) CreateGroup(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//  GetGroup
+// @Summary Get Group by id
+// @Description Responds with json
+// @Tags Friendship
+// @Produce json
+// @Param id path string true "id"
+// @Success 200 {object} database.Group
+// @Failure 400 {object} errorslope
+// @Failure 404 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Security ApiKeyAuth
+// @Router /v1/firendship/group/get/{id} [get]
 func (api *ApiService) GetGroupById(w http.ResponseWriter, r *http.Request) {
 
 	id := chi.URLParam(r, "id")

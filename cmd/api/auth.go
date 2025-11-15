@@ -446,7 +446,7 @@ func (api *ApiService) VerifyResetPasswordOtp(w http.ResponseWriter, r *http.Req
 // @Param payload body UsernamePayload true "User credentials"
 // @Success 200 {object} BoolPayload
 // @Failure 400 {object} errorslope
-// @Router /v1/auth/check-username [post]
+// @Router /v1/auth/check-username [get]
 func (apiService *ApiService) CheackUsernameAvailability(w http.ResponseWriter, r *http.Request) {
 
 	var payload UsernamePayload
