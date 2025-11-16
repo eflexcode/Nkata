@@ -2,7 +2,7 @@ package database
 
 import (
 	"context"
-	"database/sql"
+	// "database/sql"
 	"errors"
 	"log"
 	"time"
@@ -178,10 +178,10 @@ func (r *DataRepository) CheackUsernameAvailability(ctx context.Context, usernam
 	query := `SELECT username FROM users WHERE username = $1`
 	row := r.db.QueryRowContext(ctx, query, username)
 
-	if row.Err().Error() == sql.ErrNoRows.Error() {
-		return false
-	}
+	var dbUsername string
 
-	return true
+	row.Scan(&dbUsername)
+
+	return dbUsername != ""
 
 }

@@ -154,7 +154,7 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			unauthorized(w, r,  errors.New("somthing went wrong"))
+			unauthorized(w, r,  errors.New("invalid email or password"))
 			return
 		}
 		internalServer(w, r, errors.New("somthing went wrong"))
@@ -164,7 +164,7 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password))
 
 	if err != nil {
-		unauthorized(w, r, err)
+		unauthorized(w, r, errors.New("invalid email or password"))
 		return
 	}
 
@@ -451,7 +451,7 @@ func (apiService *ApiService) CheackUsernameAvailability(w http.ResponseWriter, 
 
 	var payload UsernamePayload
 
-	if err := readJson(w, r, payload); err != nil {
+	if err := readJson(w, r, &payload); err != nil {
 		badRequest(w, r, err)
 		return
 	}

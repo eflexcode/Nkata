@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -358,12 +359,25 @@ func (api *ApiService) AddEmailVerify(w http.ResponseWriter, r *http.Request) {
 	otp, err := api.database.GetOtp(ctx, otpP.Otp)
 
 	if err != nil {
+
+		if err.Error() == sql.ErrNoRows.Error() {
+			unauthorized(w, r, errors.New("+invalid otp"))
+			return
+		}
+
+		if err.Error() == "sql: Rows are closed" {
+			unauthorized(w, r, errors.New("-invalid otp"))
+			return
+		}
+
 		internalServer(w, r, err)
 		return
 	}
 
+	log.Printf("db: "+otp.Purpose+" server: "+otpPurposeAddEmail)
+
 	if otp.Purpose != otpPurposeAddEmail {
-		unauthorized(w, r, errors.New("user does not have permission to perform this action"))
+		unauthorized(w, r, errors.New("+user does not have permission to perform this action"))
 		return
 	}
 
