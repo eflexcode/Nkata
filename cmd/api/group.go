@@ -386,7 +386,7 @@ func (api *ApiService) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Upload Group Pic
 // @Description Responds with json
-// @Tags User
+// @Tags Friendship
 // @Accept multipart/form-data
 // @Produce json
 // @Param img formData file true "upload send png jpeg and gif"

@@ -35,8 +35,6 @@ definitions:
     properties:
       email:
         type: string
-      password:
-        type: string
     type: object
   api.LoginUsernamePayload:
     properties:
@@ -705,7 +703,7 @@ paths:
       - ApiKeyAuth: []
       summary: Upload Group Pic
       tags:
-      - User
+      - Friendship
   /v1/firendship/request/delete/{id}:
     post:
       description: Responds with json
@@ -1138,40 +1136,6 @@ paths:
       summary: Get-user
       tags:
       - User
-  /v1/user//add-email-verify:
-    post:
-      consumes:
-      - application/json
-      description: Responds with json
-      parameters:
-      - description: valid otp
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/api.OtpPayload'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/api.StandardResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.errorslope'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/api.errorslope'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.errorslope'
-      summary: Send otp sent to email
-      tags:
-      - User
   /v1/user/add-email:
     post:
       consumes:
@@ -1204,6 +1168,40 @@ paths:
           schema:
             $ref: '#/definitions/api.errorslope'
       summary: Add email to user. endpoint sends otp
+      tags:
+      - User
+  /v1/user/add-email-verify:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: valid otp
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.OtpPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Send otp sent to email
       tags:
       - User
   /v1/user/search/{username}:

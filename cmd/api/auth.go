@@ -27,7 +27,7 @@ type LoginUsernamePayload struct {
 
 type LoginEmailePayload struct {
 	Email    string `json:"email"`
-	Password string `json:"password"`
+	// Password string `json:"password"`
 }
 
 type OtpPayloadLogin struct {
@@ -220,7 +220,7 @@ func (api *ApiService) SignInEmail(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			unauthorized(w, r,  errors.New("somthing went wrong"))
+			unauthorized(w, r,  errors.New("invalid email or password"))
 			return
 		}
 		internalServer(w, r, errors.New("somthing went wrong"))
@@ -282,12 +282,13 @@ func (api *ApiService) VerifySignInEmailOtp(w http.ResponseWriter, r *http.Reque
 	}
 
 	now := time.Now()
-	exp, err := time.Parse(time.RFC1123Z, otp.Exp)
+	exp := otp.Exp;
+	// exp, err := time.Parse(time.RFC1123Z, otp.Exp)
 
-	if err != nil {
-		internalServer(w, r, err)
-		return
-	}
+	// if err != nil {
+	// 	internalServer(w, r, err)
+	// 	return
+	// }
 
 	if exp.Before(now) {
 		unauthorized(w, r, errors.New("otp expired"))
@@ -344,7 +345,7 @@ func (api *ApiService) SendResetPasswordOtp(w http.ResponseWriter, r *http.Reque
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			unauthorized(w, r, err)
+			notFound(w, r, errors.New("no user found with email: "+payload.Email))
 			return
 		}
 		internalServer(w, r, errors.New("somthing went wrong"))
@@ -390,6 +391,12 @@ func (api *ApiService) VerifyResetPasswordOtp(w http.ResponseWriter, r *http.Req
 		badRequest(w, r, err)
 		return
 	}
+	
+	if len(payload.Password) < 8 {
+		err := errors.New("password min character is 8")
+		badRequest(w, r, err)
+		return
+	}
 
 	ctx := r.Context()
 
@@ -400,22 +407,29 @@ func (api *ApiService) VerifyResetPasswordOtp(w http.ResponseWriter, r *http.Req
 			unauthorized(w, r, err)
 			return
 		}
+
+		if err.Error() == "sql: Rows are closed" {
+			unauthorized(w, r, errors.New("invalid otp"))
+			return
+		}
+
 		internalServer(w, r, errors.New("somthing went wrong"))
 		return
 	}
 
 	if otp.Email != payload.Email || otp.Purpose != otpPurposeResetPassword {
-		unauthorized(w, r, err)
+		unauthorized(w, r, errors.New("invalid otp"))
 		return
 	}
 
 	now := time.Now()
-	exp, err := time.Parse(time.RFC1123Z, otp.Exp)
+	exp := otp.Exp;
+	// exp, err := time.Parse(time.RFC1123Z, otp.Exp)
 
-	if err != nil {
-		internalServer(w, r, err)
-		return
-	}
+	// if err != nil {
+	// 	internalServer(w, r, err)
+	// 	return
+	// }
 
 	if exp.Before(now) {
 		unauthorized(w, r, errors.New("otp expired"))

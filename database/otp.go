@@ -6,14 +6,14 @@ import (
 )
 
 type Otp struct {
-	ID         int64  `json:"id"`
-	Username   string `json:"username"`
-	Token      int64  `json:"token"`
-	Email      string `json:"email"`
-	Purpose    string `json:"purpose"`
-	Exp        string `json:"exp"`
-	CreatedAt  string `json:"created_at"`
-	ModifiedAt string `json:"modified_at"`
+	ID         int64     `json:"id"`
+	Username   string    `json:"username"`
+	Token      int64     `json:"token"`
+	Email      string    `json:"email"`
+	Purpose    string    `json:"purpose"`
+	Exp        time.Time `json:"exp"`
+	CreatedAt  string    `json:"created_at"`
+	ModifiedAt string    `json:"modified_at"`
 }
 
 func (r *DataRepository) InsertOtp(ctx context.Context, username, email, purpose string, token int64) error {
@@ -24,7 +24,7 @@ func (r *DataRepository) InsertOtp(ctx context.Context, username, email, purpose
 
 	now := time.Now()
 
-	_, err := r.db.ExecContext(ctx, query, username, email, purpose, exp, token, now,now)
+	_, err := r.db.ExecContext(ctx, query, username, email, purpose, exp, token, now, now)
 
 	return err
 }
@@ -43,11 +43,11 @@ func (r *DataRepository) GetOtp(ctx context.Context, token int64) (*Otp, error) 
 
 	var otp Otp
 
-	err = row.Scan(&otp.ID, &otp.Username, &otp.Token, &otp.Email,&otp.Purpose, &otp.Exp, &otp.CreatedAt, &otp.ModifiedAt)
+	err = row.Scan(&otp.ID, &otp.Username, &otp.Token, &otp.Email, &otp.Purpose, &otp.Exp, &otp.CreatedAt, &otp.ModifiedAt)
 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &otp, nil
 }

@@ -744,7 +744,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Friendship"
                 ],
                 "summary": "Upload Group Pic",
                 "parameters": [
@@ -1431,7 +1431,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/user//add-email-verify": {
+        "/v1/user/add-email": {
             "post": {
                 "description": "Responds with json",
                 "consumes": [
@@ -1443,15 +1443,15 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Send otp sent to email",
+                "summary": "Add email to user. endpoint sends otp",
                 "parameters": [
                     {
-                        "description": "valid otp",
+                        "description": "valid email",
                         "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.OtpPayload"
+                            "$ref": "#/definitions/api.EmailPayload"
                         }
                     }
                 ],
@@ -1483,7 +1483,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/user/add-email": {
+        "/v1/user/add-email-verify": {
             "post": {
                 "description": "Responds with json",
                 "consumes": [
@@ -1495,15 +1495,15 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Add email to user. endpoint sends otp",
+                "summary": "Send otp sent to email",
                 "parameters": [
                     {
-                        "description": "valid email",
+                        "description": "valid otp",
                         "name": "payload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/api.EmailPayload"
+                            "$ref": "#/definitions/api.OtpPayload"
                         }
                     }
                 ],
@@ -1745,9 +1745,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "email": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 }
             }

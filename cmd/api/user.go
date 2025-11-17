@@ -337,7 +337,7 @@ func (api *ApiService) AddEmail(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} errorslope
 // @Failure 400 {object} errorslope
 // @Failure 500 {object} errorslope
-// @Router /v1/user//add-email-verify [post]
+// @Router /v1/user/add-email-verify [post]
 func (api *ApiService) AddEmailVerify(w http.ResponseWriter, r *http.Request) {
 
 	username, err := getUsernameFromCtx(r.Context())
@@ -361,12 +361,12 @@ func (api *ApiService) AddEmailVerify(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 
 		if err.Error() == sql.ErrNoRows.Error() {
-			unauthorized(w, r, errors.New("+invalid otp"))
+			unauthorized(w, r, errors.New("invalid otp"))
 			return
 		}
 
 		if err.Error() == "sql: Rows are closed" {
-			unauthorized(w, r, errors.New("-invalid otp"))
+			unauthorized(w, r, errors.New("invalid otp"))
 			return
 		}
 
@@ -374,10 +374,8 @@ func (api *ApiService) AddEmailVerify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("db: "+otp.Purpose+" server: "+otpPurposeAddEmail)
-
 	if otp.Purpose != otpPurposeAddEmail {
-		unauthorized(w, r, errors.New("+user does not have permission to perform this action"))
+		unauthorized(w, r, errors.New("user does not have permission to perform this action"))
 		return
 	}
 
@@ -387,12 +385,13 @@ func (api *ApiService) AddEmailVerify(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now()
-	exp, err := time.Parse(time.RFC1123Z, otp.Exp)
+	exp := otp.Exp;
+	// exp, err := time.Parse(time.RFC1123Z, otp.Exp)
 
-	if err != nil {
-		internalServer(w, r, err)
-		return
-	}
+	// if err != nil {
+	// 	internalServer(w, r, err)
+	// 	return
+	// }
 
 	if exp.Before(now) {
 		unauthorized(w, r, errors.New("otp expired"))
