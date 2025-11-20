@@ -1,12 +1,13 @@
 CREATE TABLE friendship (
 id SERIAL NOT NULL PRIMARY KEY ,
-firendship_id VARCHAR(255),
+friendship_id VARCHAR(255),
 username VARCHAR(255),
 last_message VARCHAR(255),
 friend_username VARCHAR(255),
 friendship_type VARCHAR(255),
 group_id INT,
 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+modified_at TIMESTAMP    
 )
 
 CREATE TABLE friendRequest (

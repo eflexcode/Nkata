@@ -678,7 +678,7 @@ const docTemplate = `{
             }
         },
         "/v1/firendship/group/update": {
-            "delete": {
+            "put": {
                 "description": "Responds with json",
                 "consumes": [
                     "application/json"
@@ -689,7 +689,7 @@ const docTemplate = `{
                 "tags": [
                     "Friendship"
                 ],
-                "summary": "Remove group member",
+                "summary": "Update group info",
                 "parameters": [
                     {
                         "description": "group details",
@@ -779,7 +779,7 @@ const docTemplate = `{
             }
         },
         "/v1/firendship/request/delete/{id}": {
-            "post": {
+            "delete": {
                 "description": "Responds with json",
                 "produces": [
                     "application/json"

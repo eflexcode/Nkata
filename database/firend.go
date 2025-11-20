@@ -15,6 +15,7 @@ type Friendship struct {
 	FriendshipType string    `json:"friendship_type"`    //one-on-one or group
 	GroupID        int64     `json:"group_id,omitempty"` //if group; remove id to remove member from group
 	CreatedAt      time.Time `json:"created_at"`
+	ModifiedAt time.Time `json:"modified_at"`
 }
 
 type FriendRequest struct {
@@ -80,7 +81,7 @@ func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentByUsern
 
 	var request []FriendRequest
 
-	query := `SELECT * FROM friendRequest WHERE sent_by = $1 AND status = $2 LIMIT = $3 OFFSET = $4`
+	query := `SELECT * FROM friendRequest WHERE sent_by = $1 AND status = $2 LIMIT $3 OFFSET $4`
 	queryCount := `SELECT COUNT(*) FROM friendRequest WHERE sent_by = $1 AND status = $2`
 
 	var totalCount int
@@ -106,7 +107,7 @@ func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentByUsern
 
 		item := FriendRequest{}
 
-		err := row.Scan(&item.ID, &item.SentBy, &item.SentTo, &item.Status, &item.CreatedAt)
+		err := row.Scan(&item.ID, &item.SentBy, &item.SentTo, &item.Status, &item.CreatedAt,&item.ModifiedAt)
 
 		if err != nil {
 			return nil, err
@@ -131,7 +132,7 @@ func (r *DataRepository) GetFriendRequestSentTo(ctx context.Context, sentToUsern
 
 	var request []FriendRequest
 
-	query := `SELECT * FROM friendRequest WHERE sent_to = $1 AND status = $2 LIMIT = $3 OFFSET = $4`
+	query := `SELECT * FROM friendRequest WHERE sent_to = $1 AND status = $2 LIMIT $3 OFFSET $4`
 	queryCount := `SELECT COUNT(*) FROM friendRequest WHERE sent_to = $1 AND status = $2`
 
 	var totalCount int
@@ -230,9 +231,9 @@ func (d *DataRepository) UpdateFriendRequestStatus(ctx context.Context, status s
 
 func (d *DataRepository) InsertFriendship(ctx context.Context, username, firendUsername, friendship_id string) error {
 
-	query := `INSERT INTO friendship(friendship_id,username,friend_username,modified_at) VALUES($1,$2,$3,$4,$5)`
+	query := `INSERT INTO friendship(friendship_id,username,last_message,friend_username,friendship_type,group_id,modified_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`
 
-	_, err := d.db.ExecContext(ctx, query, friendship_id, username, firendUsername, "one-on-one", time.Now())
+	_, err := d.db.ExecContext(ctx, query, friendship_id, username,"New chat", firendUsername, "one-on-one", 0,time.Now())
 
 	return err
 

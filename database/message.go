@@ -107,7 +107,7 @@ func (d *DataRepository) GetMessages(cxt context.Context, FriendshipID string, p
 
 	var totalCount int
 	offset := (page - 1) * limit
-	query := `SELECT * FROM message WHERE friendship_id = $1 LIMIT = $2 OFFSET = $3 ORDER BY created_at DESC`
+	query := `SELECT * FROM message WHERE friendship_id = $1 LIMIT $2 OFFSET $3 ORDER BY created_at DESC`
 	queryCount := `SELECT COUNT(*) FROM message WHERE friendship_id = $1`
 
 	counrRow := d.db.QueryRowContext(cxt, queryCount, FriendshipID)
@@ -146,7 +146,7 @@ func (d *DataRepository) GetMessages(cxt context.Context, FriendshipID string, p
 
 func (d *DataRepository) SearchMessages(cxt context.Context, FriendshipID, search, start_at, end_at string, page, limit int) (*PaginatedResponse, error) {
 
-	query := `SELECT * FROM message WHERE friendship_id = $1 AND text_content LIKE =$2 AND created_at BETWEEN =$3 AND =$4  LIMIT = $5 OFFSET = $6 ORDER BY created_at DESC`
+	query := `SELECT * FROM message WHERE friendship_id = $1 AND text_content LIKE =$2 AND created_at BETWEEN =$3 AND =$4  LIMIT $5 OFFSET $6 ORDER BY created_at DESC`
 	queryCount := `SELECT COUNT(*) FROM message WHERE friendship_id = $1 AND text_content LIKE =$2 AND created_at BETWEEN =$3 AND =$4`
 
 	var totalCount int

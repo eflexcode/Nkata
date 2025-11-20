@@ -46,6 +46,18 @@ func (apiService *ApiService) SendFriendRequest(w http.ResponseWriter, r *http.R
 
 	ctx := r.Context()
 
+	if username == payload.FriendUsername{
+		forbidden(w,r,errors.New("user cannot send friend request to self"))
+		return
+	}
+
+	userExist := apiService.database.CheackUsernameAvailability(ctx, payload.FriendUsername)
+
+	if !userExist {
+		notFound(w, r, errors.New("no user found with username: "+payload.FriendUsername))
+		return
+	}
+
 	boolean := apiService.database.HasSentMeRequest(ctx, payload.FriendUsername, username)
 
 	if boolean {
@@ -101,7 +113,7 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 
 		if err.Error() == "sql: no rows in result set" {
-			notFound(w, r, errors.New("no friend request found with username: "+strconv.Itoa(int(payload.Id))))
+			notFound(w, r, errors.New("no friend request found with id: "+strconv.Itoa(int(payload.Id))))
 			return
 		}
 
@@ -170,7 +182,7 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 // @Failure 404 {object} errorslope
 // @Failure 400 {object} errorslope
 // @Failure 500 {object} errorslope
-// @Router /v1/firendship/request/delete/{id}  [post]
+// @Router /v1/firendship/request/delete/{id}  [delete]
 func (api *ApiService) DeleteFriendRequest(w http.ResponseWriter, r *http.Request) {
 
 	username, err := getUsernameFromCtx(r.Context())
@@ -191,6 +203,17 @@ func (api *ApiService) DeleteFriendRequest(w http.ResponseWriter, r *http.Reques
 	}
 
 	request, err := api.database.GetFriendRequestById(ctx, int64(idInt))
+
+	if err != nil {
+
+		if err.Error() == "sql: no rows in result set"  || err.Error() == "sql: Rows are closed"{
+			notFound(w, r, errors.New("no request found with id: "+id))
+			return
+		}
+
+		internalServer(w, r, err)
+		return
+	}
 
 	if request.SentBy != username {
 		unauthorized(w, r, errors.New("user does not have permision to perform this action"))

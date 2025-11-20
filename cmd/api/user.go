@@ -214,7 +214,8 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 func (api *ApiService) LoadProfilPic(w http.ResponseWriter, r *http.Request) {
 
 	filename := chi.URLParam(r, "img_name")
-	url := "C:\\Users\\5557\\Desktop\\nkata_uploads\\profile\\" + filename
+	// url := "C:\\Users\\5557\\Desktop\\nkata_uploads\\profile\\" + filename
+	url := "/home/ifeanyi/nkata_storage/profile_storage/"+filename
 	file, err := os.Open(url)
 
 	if err != nil {

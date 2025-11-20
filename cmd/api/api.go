@@ -100,8 +100,8 @@ func IntiApi(config *Config) {
 		r.Route("/firendship", func(r chi.Router) {
 			r.Use(HandleJWTAuth)
 			r.Post("/request/send", apiService.SendFriendRequest)
-			r.Post("/request/responed", apiService.RespondFriendRequest)
-			r.Post("/request/delete/{id}", apiService.DeleteFriendRequest)
+			r.Post("/request/respond", apiService.RespondFriendRequest)
+			r.Delete("/request/delete/{id}", apiService.DeleteFriendRequest)
 			r.Get("/request/get-sent", apiService.GetFriendRequestSent)
 			r.Get("/request/get-received", apiService.GetFriendRequestRecieved)
 

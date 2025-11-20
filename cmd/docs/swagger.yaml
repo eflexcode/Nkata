@@ -640,7 +640,7 @@ paths:
       tags:
       - Friendship
   /v1/firendship/group/update:
-    delete:
+    put:
       consumes:
       - application/json
       description: Responds with json
@@ -670,7 +670,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.errorslope'
-      summary: Remove group member
+      summary: Update group info
       tags:
       - Friendship
   /v1/firendship/group/upload-group-pic:
@@ -705,7 +705,7 @@ paths:
       tags:
       - Friendship
   /v1/firendship/request/delete/{id}:
-    post:
+    delete:
       description: Responds with json
       parameters:
       - description: friend request id

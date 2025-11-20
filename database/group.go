@@ -145,7 +145,7 @@ func (d *DataRepository) GetGroupMembersByGroupId(cxt context.Context, id, limit
 
 	var totalCount int64
 
-	query := `SELECT * FROM group_member WHERE group_id = $1 LIMIT = $2 OFFSET = $3`
+	query := `SELECT * FROM group_member WHERE group_id = $1 LIMIT $2 OFFSET $3`
 	queryCount := `SELECT COUNT(*) FROM group_member WHERE group_id = $1`
 
 	if err := d.db.QueryRowContext(cxt, queryCount, id).Scan(&totalCount); err != nil {

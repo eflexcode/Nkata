@@ -46,3 +46,10 @@ func tooManyRequest(w http.ResponseWriter, r *http.Request, err error) {
 
     errorResponse(w, http.StatusTooManyRequests, err.Error())
 }
+
+func forbidden(w http.ResponseWriter, r *http.Request, err error) {
+
+	log.Default().Println("Forbidden", "method", r.Method, "path", r.URL.Path, "error")
+
+    errorResponse(w, http.StatusForbidden, err.Error())
+}

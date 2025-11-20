@@ -346,7 +346,7 @@ func (api *ApiService) RemoveGroupMember(w http.ResponseWriter, r *http.Request)
 	writeJson(w, 200, s)
 }
 
-// @Summary Remove group member
+// @Summary Update group info 
 // @Description Responds with json
 // @Tags Friendship
 // @Accept json
@@ -356,7 +356,7 @@ func (api *ApiService) RemoveGroupMember(w http.ResponseWriter, r *http.Request)
 // @Failure 400  {object} errorslope
 // @Failure 500  {object} errorslope
 // @Failure 402  {object} errorslope
-// @Router /v1/firendship/group/update [delete]
+// @Router /v1/firendship/group/update [put]
 func (api *ApiService) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 
 	var group UpdateGroupPayload
