@@ -1,0 +1,1305 @@
+definitions:
+  api.AddGroup:
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+    type: object
+  api.BoolPayload:
+    properties:
+      exist:
+        type: boolean
+    type: object
+  api.CreatGroup:
+    properties:
+      name:
+        type: string
+    type: object
+  api.EmailPayload:
+    properties:
+      email:
+        type: string
+    type: object
+  api.FriendRequestPayload:
+    properties:
+      friend_username:
+        type: string
+    type: object
+  api.JwtJson:
+    properties:
+      token:
+        type: string
+    type: object
+  api.LoginEmailePayload:
+    properties:
+      email:
+        type: string
+    type: object
+  api.LoginUsernamePayload:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  api.OtpPayload:
+    properties:
+      otp:
+        type: integer
+    type: object
+  api.OtpPayloadLogin:
+    properties:
+      email:
+        type: string
+      otp:
+        type: integer
+    type: object
+  api.OtpPayloadReset:
+    properties:
+      email:
+        type: string
+      otp:
+        type: integer
+      password:
+        type: string
+    type: object
+  api.RegisterUserPayload:
+    properties:
+      display_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  api.RespondFriendRequestPayload:
+    properties:
+      id:
+        type: integer
+      status:
+        type: string
+    type: object
+  api.StandardResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  api.UpdateGroupPayload:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  api.UpdatePayload:
+    properties:
+      bio:
+        type: string
+      display_name:
+        type: string
+    type: object
+  api.UsernamePayload:
+    properties:
+      username:
+        type: string
+    type: object
+  api.errorslope:
+    properties:
+      error:
+        type: string
+      status:
+        type: integer
+    type: object
+  database.Group:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      modified_at:
+        type: string
+      name:
+        type: string
+      pic_url:
+        type: string
+    type: object
+  database.Media:
+    properties:
+      media_type:
+        description: NoMedia,made it file extention
+        type: string
+      media_url:
+        type: string
+    type: object
+  database.Message:
+    properties:
+      created_at:
+        type: string
+      friendship_id:
+        description: put groupd id here if group
+        type: string
+      id:
+        type: integer
+      media:
+        $ref: '#/definitions/database.Media'
+      message_id:
+        type: string
+      message_type:
+        description: MessageChat,MessageRaction,MessageInfo
+        type: string
+      modified_at:
+        type: string
+      sender_username:
+        type: string
+      text_content:
+        type: string
+    type: object
+  database.PaginatedResponse:
+    properties:
+      data: {}
+      limit:
+        type: integer
+      page:
+        type: integer
+      total_count:
+        type: integer
+    type: object
+  database.User:
+    properties:
+      _:
+        type: boolean
+      bio:
+        type: string
+      created_at:
+        type: string
+      display_name:
+        type: string
+      email:
+        type: string
+      friends_count:
+        type: integer
+      groups_count:
+        type: integer
+      id:
+        type: integer
+      image_url:
+        type: string
+      is_online:
+        type: boolean
+      modified_at:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:5557
+info:
+  contact: {}
+  description: Nkata monolight server
+  title: Nkata API
+  version: "1.0"
+paths:
+  /v1/auth/check-username:
+    get:
+      consumes:
+      - application/json
+      description: Cheack Username Availability
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.UsernamePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.BoolPayload'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Cheack Username Availability
+      tags:
+      - Auth
+  /v1/auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Send otp email if exist
+      parameters:
+      - description: User sign-in credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.EmailPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Reset Password
+      tags:
+      - Auth
+  /v1/auth/reset-password-verify:
+    post:
+      consumes:
+      - application/json
+      description: Send otp email if exist
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.OtpPayloadReset'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Verify Reset Password  otp
+      tags:
+      - Auth
+  /v1/auth/sign-in-with-email:
+    post:
+      consumes:
+      - application/json
+      description: Send otp to email use the otp at the verify endpoint to get your
+        token
+      parameters:
+      - description: User sign-in credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.LoginEmailePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Sign-in with Email
+      tags:
+      - Auth
+  /v1/auth/sign-in-with-email-verify:
+    post:
+      consumes:
+      - application/json
+      description: Send otp token to get jwt
+      parameters:
+      - description: User sign-in credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.OtpPayloadLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.JwtJson'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Sign-in with Email Otp
+      tags:
+      - Auth
+  /v1/auth/sign-in-with-username:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: User sign-in credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.LoginUsernamePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.JwtJson'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Sign-in with username
+      tags:
+      - Auth
+  /v1/auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.RegisterUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Sign-up
+      tags:
+      - Auth
+  /v1/firendship/group/add-member:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: group id and username
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.AddGroup'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "402":
+          description: Payment Required
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Add group member
+      tags:
+      - Friendship
+  /v1/firendship/group/create:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: name
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreatGroup'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Create a new group
+      tags:
+      - Friendship
+  /v1/firendship/group/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "402":
+          description: Payment Required
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Delete group
+      tags:
+      - Friendship
+  /v1/firendship/group/get-members/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: page
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "402":
+          description: Payment Required
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Get group members
+      tags:
+      - Friendship
+  /v1/firendship/group/get/{id}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Group'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Group by id
+      tags:
+      - Friendship
+  /v1/firendship/group/remove-member:
+    delete:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: group id and username
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.AddGroup'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "402":
+          description: Payment Required
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Remove group member
+      tags:
+      - Friendship
+  /v1/firendship/group/update:
+    put:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: group details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdateGroupPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "402":
+          description: Payment Required
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Update group info
+      tags:
+      - Friendship
+  /v1/firendship/group/upload-group-pic:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Responds with json
+      parameters:
+      - description: upload send png jpeg and gif
+        in: formData
+        name: img
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload Group Pic
+      tags:
+      - Friendship
+  /v1/firendship/request/delete/{id}:
+    delete:
+      description: Responds with json
+      parameters:
+      - description: friend request id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Deleted Request
+      tags:
+      - Friendship
+  /v1/firendship/request/get-recieved:
+    get:
+      description: Responds with json
+      parameters:
+      - description: page to get
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: page limit
+        in: query
+        name: limit
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.PaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Get Friend Request Recieved
+      tags:
+      - Friendship
+  /v1/firendship/request/get-sent:
+    get:
+      description: Responds with json
+      parameters:
+      - description: page to get
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: page limit
+        in: query
+        name: limit
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.PaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Get Friend Request Sent
+      tags:
+      - Friendship
+  /v1/firendship/request/responed:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: id and status
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.RespondFriendRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Responed to friend request
+      tags:
+      - Friendship
+  /v1/firendship/request/send:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: id and friend id
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.FriendRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Send friend request
+      tags:
+      - Friendship
+  /v1/media/chat/{img_name}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: file name
+        in: path
+        name: img_name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Download chat Pic
+      tags:
+      - Media
+  /v1/media/groups/{img_name}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: file name
+        in: path
+        name: img_name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Download Group Pic
+      tags:
+      - Media
+  /v1/media/profiles/{img_name}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: file name
+        in: path
+        name: img_name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Download Profil Pic
+      tags:
+      - Media
+  /v1/message/delete/{message_id}:
+    delete:
+      description: Responds with json
+      parameters:
+      - description: message_id
+        in: path
+        name: message_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Delete Messages with message_id
+      tags:
+      - Message
+  /v1/message/get-messages/{friendship_id}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: friendship id
+        in: path
+        name: friendship_id
+        required: true
+        type: string
+      - description: current page if any
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: page max lenght if any
+        in: query
+        name: limit
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.PaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Get Messages with friendship id
+      tags:
+      - Message
+  /v1/message/get/{message_id}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: message_id
+        in: path
+        name: message_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.Message'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Get Messages with message_id
+      tags:
+      - Message
+  /v1/message/search-messages/{friendship_id}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: friendship id
+        in: path
+        name: friendship_id
+        required: true
+        type: string
+      - description: current page if any
+        in: query
+        name: page
+        required: true
+        type: string
+      - description: page max lenght if any
+        in: query
+        name: limit
+        required: true
+        type: string
+      - description: query text
+        in: query
+        name: q
+        required: true
+        type: string
+      - description: start date
+        in: query
+        name: start_at
+        required: true
+        type: string
+      - description: end date
+        in: query
+        name: end_at
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.PaginatedResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Search Messages with friendship_id
+      tags:
+      - Message
+  /v1/message/ws/{friendship_id}:
+    get:
+      description: Responds with json
+      produces:
+      - application/json
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Message ws connection
+      tags:
+      - Message
+  /v1/user/:
+    get:
+      description: Responds with json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      security:
+      - ApiKeyAuth: []
+      summary: Get-user
+      tags:
+      - User
+  /v1/user/add-email:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: valid email
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.EmailPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Add email to user. endpoint sends otp
+      tags:
+      - User
+  /v1/user/add-email-verify:
+    post:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: valid otp
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.OtpPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Send otp sent to email
+      tags:
+      - User
+  /v1/user/search/{username}:
+    get:
+      description: Responds with json
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      security:
+      - ApiKeyAuth: []
+      summary: Search User
+      tags:
+      - User
+  /v1/user/update:
+    put:
+      consumes:
+      - application/json
+      description: Responds with json
+      parameters:
+      - description: you can sent both or either
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdatePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      summary: Update user display_name or bio
+      tags:
+      - User
+  /v1/user/upload-profile-picture:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Responds with json
+      parameters:
+      - description: upload send png jpeg and gif
+        in: formData
+        name: img
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.errorslope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.errorslope'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload Profil Pic
+      tags:
+      - User
+swagger: "2.0"
