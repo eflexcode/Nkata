@@ -15,7 +15,7 @@ type Friendship struct {
 	FriendshipType string    `json:"friendship_type"`    //one-on-one or group
 	GroupID        int64     `json:"group_id,omitempty"` //if group; remove id to remove member from group
 	CreatedAt      time.Time `json:"created_at"`
-	ModifiedAt time.Time `json:"modified_at"`
+	ModifiedAt     time.Time `json:"modified_at"`
 }
 
 type FriendRequest struct {
@@ -107,7 +107,7 @@ func (r *DataRepository) GetFriendRequestSentBy(ctx context.Context, sentByUsern
 
 		item := FriendRequest{}
 
-		err := row.Scan(&item.ID, &item.SentBy, &item.SentTo, &item.Status, &item.CreatedAt,&item.ModifiedAt)
+		err := row.Scan(&item.ID, &item.SentBy, &item.SentTo, &item.Status, &item.CreatedAt, &item.ModifiedAt)
 
 		if err != nil {
 			return nil, err
@@ -147,6 +147,56 @@ func (r *DataRepository) GetFriendRequestSentTo(ctx context.Context, sentToUsern
 	offset := (page - 1) * limit
 
 	row, err := r.db.Query(query, sentToUsername, "pending", limit, offset)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer row.Close()
+
+	for row.Next() {
+
+		item := FriendRequest{}
+
+		err := row.Scan(&item.ID, &item.SentBy, &item.SentTo, &item.Status, &item.CreatedAt, &item.ModifiedAt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		request = append(request, item)
+
+	}
+
+	p := PaginatedResponse{
+		Data:       request,
+		TotalCount: totalCount,
+		Page:       int(page),
+		Limit:      int(limit),
+	}
+
+	return &p, nil
+}
+
+// request i send or received
+func (r *DataRepository) GetFriendRequestAny(ctx context.Context, username string, page, limit int64) (*PaginatedResponse, error) {
+	var request []FriendRequest
+
+	query := `SELECT * FROM friendRequest WHERE sent_to = $1 OR send_by = $2 AND status = $3 LIMIT $4 OFFSET $5`
+	queryCount := `SELECT COUNT(*) FROM friendRequest WHERE sent_to = $1 OR send_by = $2  AND status = $2`
+
+	var totalCount int
+
+	cRow := r.db.QueryRowContext(ctx, queryCount, username, username, "pending")
+
+	err := cRow.Scan(&totalCount)
+	if err != nil {
+		return nil, err
+	}
+
+	offset := (page - 1) * limit
+
+	row, err := r.db.Query(query, username, username,"pending", limit, offset)
 
 	if err != nil {
 		return nil, err
@@ -233,7 +283,7 @@ func (d *DataRepository) InsertFriendship(ctx context.Context, username, firendU
 
 	query := `INSERT INTO friendship(friendship_id,username,last_message,friend_username,friendship_type,group_id,modified_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`
 
-	_, err := d.db.ExecContext(ctx, query, friendship_id, username,"New chat", firendUsername, "one-on-one", 0,time.Now())
+	_, err := d.db.ExecContext(ctx, query, friendship_id, username, "New chat", firendUsername, "one-on-one", 0, time.Now())
 
 	return err
 

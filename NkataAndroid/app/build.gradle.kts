@@ -55,4 +55,13 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 //    implementation(libs.androidx.compose.)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
+
+    // Optional: Material 3 Window Size Class (For adaptive/responsive layouts)
+    implementation(libs.androidx.compose.material3.window.size.class1)
+
+    // Retrofit Gson Converter (for JSON parsing)
+    implementation(libs.converter.gson)
+    implementation(libs.retrofit)
+
 }

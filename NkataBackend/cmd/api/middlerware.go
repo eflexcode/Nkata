@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+
 	// "fmt"
 	"log"
 	"main/internal/evn"
@@ -19,10 +20,11 @@ type ClientRequest struct {
 	RequestSentPerMin int64
 	LastSeenAt        time.Time
 }
+var clientRequests = make(map[string]*ClientRequest)
 
 func (api *ApiService) HandleRateLimiter(h http.Handler) http.Handler {
 
-	var clientRequests = make(map[string]*ClientRequest)
+	// var clientRequests = make(map[string]*ClientRequest)
 	var mutex sync.Mutex
 
 	//remove ip every 5 minutes if LastSeenAt > 5 munite
@@ -60,7 +62,7 @@ func (api *ApiService) HandleRateLimiter(h http.Handler) http.Handler {
 					RequestSentPerMin: client.RequestSentPerMin - 1, //remove to request pull
 					LastSeenAt:        time.Now(),
 				}
-				log.Println("curent request: " + (strconv.Itoa(int(client.RequestSentPerMin - 1))))
+				log.Println("current request: " + (strconv.Itoa(int(client.RequestSentPerMin - 1))))
 				h.ServeHTTP(w, r)
 			} else {
 				clientRequests[ip] = &ClientRequest{

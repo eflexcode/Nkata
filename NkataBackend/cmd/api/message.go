@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -36,7 +37,7 @@ type Media struct {
 }
 
 type MessagePayload struct {
-	FriendshipID   string `json:"friendship_id"` //put groupd id here if group
+	FriendshipID   string `json:"friendship_id"` //put grouped id here if group
 	SenderUsername string `json:"sender_username"`
 	MessageType    string `json:"message_type"` //MessageChat,MessageRaction,MessageInfo
 	TextContent    string `json:"text_content"`
@@ -46,6 +47,154 @@ type MessagePayload struct {
 type MessageNotInDb struct {
 	MessageId string `json:"message_id"`
 	Info      string `json:"info"`
+}
+
+type WsConnectionManager struct {
+	sync.RWMutex
+	Connections map[string]*websocket.Conn //the sting is the user_id
+}
+
+// var g = map[string] map[string]
+
+var connections map[string]*websocket.Conn
+var conns = WsConnectionManager{
+	Connections: connections,
+}
+
+type WsMessage struct {
+	FriendshipID string `json:"friendship_id"` //put grouped id here if group
+	MessageType  string `json:"message_type"`  //MessageChat,MessageRaction,MessageInfo
+	TextContent  string `json:"text_content"`
+	Media        Media  `json:"media"`
+}
+
+type WsNotification struct {
+	Username string `json:"username"`
+	Title    string `json:"title"`
+	Message  string `json:"message"`
+}
+
+type WsPayload struct {
+	UserId         string         `json:"user_id"`
+	PayloadType    string         `json:"payload_type"` //notification,message
+	MessagePayload MessagePayload `json:"message"`
+	WsNotification WsNotification `json:"notification"`
+}
+
+func addConnection(userId string, conn *websocket.Conn) {
+	conns.Lock()
+	conns.Connections[userId] = conn
+	conns.Unlock()
+}
+
+func deleteConnection(userId string) {
+	conns.Lock()
+	defer conns.Unlock()
+
+	if conn, exist := conns.Connections[userId]; exist {
+		conn.Close()
+		delete(conns.Connections, userId)
+	}
+}
+
+// @Summary General ws handler
+// @Description Responds with json
+// @Tags ws
+// @Produce json
+// @Success 200 {object} database.Message
+// @Produce octet-stream
+// @Success 200 {file} file
+// @Failure 400 {object} errorslope
+// @Failure 500 {object} errorslope
+// @Router /v1/general-authenticated/ws/{user_id} [post]
+func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) {
+
+	conn, err := upgradeConn.Upgrade(w, r, nil)
+	if err != nil {
+		internalServer(w, r, errors.New("failed to upgrade connection to ws"))
+		return
+	}
+
+	user_id := chi.URLParam(r, "user_id")
+
+	addConnection(user_id, conn)
+	defer deleteConnection(user_id)
+
+	for {
+
+		messageType, data, err := conn.ReadMessage()
+
+		if err != nil {
+			log.Printf("Error reading message: %v", err)
+			break
+		}
+
+		switch messageType {
+
+		case websocket.TextMessage:
+			var payload WsPayload
+			if err := json.Unmarshal(data, &payload); err != nil {
+				log.Printf("Invalid payload sent: %v", err)
+				return
+			}
+
+			var userId = payload.UserId
+			var payloadType = payload.PayloadType
+
+			if payloadType == "message" {
+
+				var message = payload.MessagePayload
+				var messageId = uuid.New().String()
+
+				//broadcast message before insert for latency
+
+				var now = time.Now()
+				
+				message := database.Message{
+					ID: int64(uuid.New()),
+					MessageID:      messageId,
+					FriendshipID:   message.FriendshipID,
+					SenderUsername: message.SenderUsername,
+					MessageType:    message.MessageType,
+					TextContent:    message.TextContent,
+					Media:          database.Media(message.Media),
+					CreatedAt:      now.String(),
+					ModifiedAt:     now.String(),
+				}
+
+				err = api.database.InsertMessage(r.Context(), messageId, message.FriendshipID, message.SenderUsername, message.MessageType, message.TextContent, now)
+
+				if err != nil {
+
+					info := MessageNotInDb{
+						MessageId: messageId,
+						Info:      "failed to insert with this id in db please remove",
+					}
+					log.Printf("%v", info)
+					
+					byteResponse, err := json.Marshal(message)
+
+					if err != nil {
+						log.Printf("failed to parse response to byte: %v", err)
+						return
+					}
+
+					//not done yet
+					if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+						log.Panicf("socket publish failed: %g", err)
+					}
+
+				}
+
+			} else if payloadType == "notification" {
+
+			}
+
+		case websocket.BinaryMessage:
+
+		}
+	}
+
 }
 
 // @Summary Message ws connection
@@ -125,17 +274,17 @@ func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) 
 					MessageId: messageId,
 					Info:      "failed to insert with this id in db please remove",
 				}
+				log.Printf("%v", info)
+				// byteResponse, err := json.Marshal(info)
 
-				byteResponse, err := json.Marshal(info)
+				// if err != nil {
+				// 	log.Printf("failed to parse response 2 to byte: %v", err)
+				// 	return
+				// }
 
-				if err != nil {
-					log.Printf("failed to parse response 2 to byte: %v", err)
-					return
-				}
-
-				if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
-					log.Panicf("socket publish failed: %g", err)
-				}
+				// if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+				// 	log.Panicf("socket publish failed: %g", err)
+				// }
 
 			}
 
@@ -207,7 +356,7 @@ func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) 
 			}
 
 			err = api.database.InsertMessageMedia(ctx, messageId, friendshipId, username, "MessageChat", url, fileExtention, now)
-			
+
 			if err != nil {
 
 				info := MessageNotInDb{
@@ -235,6 +384,7 @@ func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 }
+
 // @Summary Get Messages with message_id
 // @Description Responds with json
 // @Tags Message

@@ -413,7 +413,7 @@ func (api *ApiService) VerifyResetPasswordOtp(w http.ResponseWriter, r *http.Req
 			return
 		}
 
-		internalServer(w, r, errors.New("somthing went wrong"))
+		internalServer(w, r, errors.New("something went wrong"))
 		return
 	}
 

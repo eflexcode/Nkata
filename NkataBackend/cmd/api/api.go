@@ -18,11 +18,11 @@ import (
 type ApiService struct {
 	database *database.DataRepository
 	config   *Config
-	rClient *redis.Client
+	rClient  *redis.Client
 }
 
-func NewRepos(userRepo *database.DataRepository, config *Config,rClient *redis.Client) *ApiService {
-	return &ApiService{database: userRepo, config: config,rClient: rClient}
+func NewRepos(userRepo *database.DataRepository, config *Config, rClient *redis.Client) *ApiService {
+	return &ApiService{database: userRepo, config: config, rClient: rClient}
 }
 
 // @title Example API
@@ -42,26 +42,26 @@ func IntiApi(config *Config) {
 	log.Print("Database conection established")
 
 	redisOption := redis.Options{
-		Addr: config.RedisConfig.Addre,
+		Addr:     config.RedisConfig.Addre,
 		Password: config.RedisConfig.Password,
-		DB: config.RedisConfig.Db,
+		DB:       config.RedisConfig.Db,
 	}
 
 	redisClient := redis.NewClient(&redisOption)
 
-	result,err :=  redisClient.Ping(context.Background()).Result()
+	result, err := redisClient.Ping(context.Background()).Result()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Print("Redis conection established server says "+result)
+	log.Print("Redis conection established server says " + result)
 
 	r := chi.NewRouter()
 
 	uRepo := database.NewUserRepository(db)
 
-	apiService := NewRepos(uRepo, config,redisClient)
+	apiService := NewRepos(uRepo, config, redisClient)
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -87,6 +87,11 @@ func IntiApi(config *Config) {
 		// 	httpSwagger.URL("http://localhost:5557/v1/swagger/doc.json"),
 		// ))
 
+		r.Route("/general-authenticated", func(r chi.Router) {
+			r.Use(HandleJWTAuth)
+			r.Post("/ws/{user_id}", apiService.GeneralWsHandler)
+		})
+
 		r.Route("/user", func(r chi.Router) {
 			r.Use(HandleJWTAuth)
 			r.Get("/", apiService.GetByUsername)
@@ -104,7 +109,8 @@ func IntiApi(config *Config) {
 			r.Delete("/request/delete/{id}", apiService.DeleteFriendRequest)
 			r.Get("/request/get-sent", apiService.GetFriendRequestSent)
 			r.Get("/request/get-received", apiService.GetFriendRequestRecieved)
-
+			r.Get("/request/get-any",apiService.GetFriendRequestAny)
+			
 			r.Post("/group/create", apiService.CreateGroup)
 			r.Post("/group/get/{id}", apiService.GetGroupById)
 			r.Get("/group/get-members/{id}", apiService.GetGroupMembers)

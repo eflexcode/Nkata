@@ -134,7 +134,7 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 
 		err1 := api.database.InsertFriendship(ctx, frendRequest.SentBy, frendRequest.SentTo, friendship_id)
 
-		err = api.database.InsertFriendship(ctx, frendRequest.SentTo, frendRequest.SentBy, friendship_id)
+		// err = api.database.InsertFriendship(ctx, frendRequest.SentTo, frendRequest.SentBy, friendship_id)
 
 		if err != nil || err1 != nil {
 			internalServer(w, r, err)
@@ -160,7 +160,7 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 
 		s := StandardResponse{
 			Status:  200,
-			Message: "firend request rejected successfully",
+			Message: "friend request rejected successfully",
 		}
 
 		writeJson(w, 200, s)
@@ -171,6 +171,37 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+}
+
+func(api *ApiService) GetFriendRequestAny(w http.ResponseWriter, r *http.Request){
+	username, err := getUsernameFromCtx(r.Context())
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+
+	page := r.URL.Query().Get("page")
+	limit := r.URL.Query().Get("limit")
+
+	pageInt, err := strconv.Atoi(page)
+	limitInt, errp := strconv.Atoi(limit)
+
+	if err != nil || errp != nil {
+		badRequest(w, r, errors.New("page or limit is not a number"))
+		return
+	}
+
+	response, err := api.database.GetFriendRequestAny(ctx, username, int64(pageInt), int64(limitInt))
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	writeJson(w, 200, response)
 }
 
 // @Summary Deleted Request
@@ -228,7 +259,7 @@ func (api *ApiService) DeleteFriendRequest(w http.ResponseWriter, r *http.Reques
 
 	s := StandardResponse{
 		Status:  200,
-		Message: "firend request deleted successfully",
+		Message: "friend request deleted successfully",
 	}
 
 	writeJson(w, 200, s)

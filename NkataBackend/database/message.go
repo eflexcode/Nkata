@@ -30,7 +30,7 @@ type MessageType int
 
 const (
 	MessageChat MessageType = iota
-	MessageRaction
+	MessageReaction
 	MessageInfo
 )
 
@@ -39,7 +39,7 @@ type Message struct {
 	MessageID      string `json:"message_id"`
 	FriendshipID   string `json:"friendship_id"` //put groupd id here if group
 	SenderUsername string `json:"sender_username"`
-	MessageType    string `json:"message_type"` //MessageChat,MessageRaction,MessageInfo
+	MessageType    string `json:"message_type"` //MessageChat,MessageReaction,MessageInfo
 	TextContent    string `json:"text_content"`
 	Media          Media  `json:"media"`
 	CreatedAt      string `json:"created_at"`
@@ -50,8 +50,8 @@ func (d *DataRepository) InsertMessage(cxt context.Context, MessageID, Friendshi
 
 	query := `INSERT INTO message(message_id,friendship_id,sender_username,message_type,text_content,media_url,media_type,modified_at,created_at)`
 
-	if MessageType != "MessageChat" && MessageType != "MessageRaction" && MessageType != "MessageInfo" {
-		return errors.New("MessageType is invalide")
+	if MessageType != "MessageChat" && MessageType != "MessageReaction" && MessageType != "MessageInfo" {
+		return errors.New("MessageType is invalid")
 	}
 
 	_, err := d.db.ExecContext(cxt, query, FriendshipID, SenderUsername, MessageType, TextContent, "", "NoMedia", now)
@@ -63,12 +63,12 @@ func (d *DataRepository) InsertMessageMedia(cxt context.Context, MessageID, Frie
 
 	query := `INSERT INTO message(message_id,friendship_id,sender_username,message_type,text_content,media_url,media_type,modified_at,created_at)`
 
-	if MessageType != "MessageChat" && MessageType != "MessageRaction" && MessageType != "MessageInfo" {
-		return errors.New("MessageType is invalide")
+	if MessageType != "MessageChat" && MessageType != "MessageReaction" && MessageType != "MessageInfo" {
+		return errors.New("MessageType is invalid")
 	}
 
 	// if MediaType != "NoMedia" && MediaType != "Image" && MediaType != "Audio" && MediaType != "Video" && MediaType != "Doc" {
-	// 	return errors.New("MediaType is invalide")
+	// 	return errors.New("MediaType is invalid")
 	// }
 
 	_, err := d.db.ExecContext(cxt, query, FriendshipID, SenderUsername, MessageType, "", MediaUrl, MediaType, now, now)
