@@ -72,7 +72,7 @@ func (apiService *ApiService) SendFriendRequest(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	err = apiService.database.InsertFriendRequest(ctx, payload.FriendUsername, username)
+	_, err = apiService.database.InsertFriendRequest(ctx, payload.FriendUsername, username)
 
 	if err != nil {
 		internalServer(w, r, err)
@@ -161,6 +161,13 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 		s := StandardResponse{
 			Status:  200,
 			Message: "friend request rejected successfully",
+		}
+
+		err = api.database.DeleteFriendRequest(ctx, payload.Id)
+		
+		if err != nil {
+			internalServer(w, r, err)
+			return
 		}
 
 		writeJson(w, 200, s)
@@ -361,9 +368,9 @@ func (api *ApiService) GetMyFriends(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	
-	response, err := api.database.GetFriends(ctx,username)
-	
+
+	response, err := api.database.GetFriends(ctx, username)
+
 	if err != nil {
 		internalServer(w, r, err)
 		return

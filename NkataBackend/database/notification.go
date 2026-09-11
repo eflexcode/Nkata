@@ -12,6 +12,7 @@ type Notification struct {
 	UserID int64 `json:"user_id"`
 	Title string `json:"title"`
 	Message string `json:"message"`
+	UrlImg string `json:"img_url"`
 	NotificationType NotificationType `json:"notification_type"`
 	CreatedAt string `json:"created_at"`
 }

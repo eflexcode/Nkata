@@ -87,12 +87,21 @@ type ProfileUpdateReturnPayload struct {
 	Online                string `json:"online"` //note i send date if date is greater than 1 min off line
 }
 
+type WsFriendRequestPayload struct {
+	Type           string                      `json:"type"` //request,response
+	FriendUsername string                      `json:"friend_username"`
+	FriendUserId   string                      `json:"friend_user_id"`
+	Respond        RespondFriendRequestPayload `json:"respond"`
+	//in another
+}
+
 type WsPayload struct {
-	UserId         string         `json:"user_id"`
-	PayloadType    string         `json:"payload_type"` //notification,message,friendRequest,myFriends,profileUpdate
-	MessagePayload MessagePayload `json:"message"`
-	WsNotification WsNotification `json:"notification"`
-	ProfileUpdate  ProfileUpdate  `json:"profile_update"`
+	UserId                 string                 `json:"user_id"`
+	PayloadType            string                 `json:"payload_type"` //notification,message,friendRequest,myFriends,profileUpdate
+	MessagePayload         MessagePayload         `json:"message"`
+	WsNotification         WsNotification         `json:"notification"`
+	ProfileUpdate          ProfileUpdate          `json:"profile_update"`
+	WsFriendRequestPayload WsFriendRequestPayload `json:"friend_request"`
 }
 
 type WsStructure struct {
@@ -186,7 +195,7 @@ func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) 
 		}
 
 		switch messageType {
-
+		//Note todo send files like audio and img
 		case websocket.TextMessage:
 			var payload WsPayload
 			if err := json.Unmarshal(data, &payload); err != nil {
@@ -271,6 +280,137 @@ func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) 
 
 			} else if payloadType == "friendRequest" {
 
+				var requestProcesses = payload.WsFriendRequestPayload
+
+				if requestProcesses.Type == "request" {
+
+					if username == requestProcesses.FriendUsername {
+						forbidden(w, r, errors.New("user cannot send friend request to self"))
+						return
+					}
+
+					userExist := api.database.CheackUsernameAvailability(ctx, requestProcesses.FriendUsername)
+
+					if !userExist {
+						notFound(w, r, errors.New("no user found with username: "+requestProcesses.FriendUsername))
+						continue
+					}
+
+					boolean := api.database.HasSentMeRequest(ctx, requestProcesses.FriendUsername, username)
+
+					if boolean {
+						conflict(w, r, errors.New("user already sent you a friend request"))
+						continue
+					}
+
+					duplicate := api.database.CheckDuplicateRequest(ctx, username, requestProcesses.FriendUsername)
+
+					if duplicate {
+						conflict(w, r, errors.New("you already a friend request to this user"))
+						continue
+					}
+
+					fRequest, err := api.database.InsertFriendRequest(ctx, requestProcesses.FriendUsername, username)
+
+					if err != nil {
+						internalServer(w, r, err)
+						continue
+					}
+
+					byteResponse, err := json.Marshal(fRequest)
+					if err != nil {
+						log.Printf("failed to parse response to byte: %v", err)
+						return
+					}
+
+					//write to user name
+					for conPosition := range conns {
+						wsConn := conns[conPosition]
+						if wsConn.UserId == userId {
+							//my user id return/continue
+							// note once sent it enters user(sender chat first sqlite in sender device) so no need to send back to the person yet might need to for seen update
+							continue
+						}
+
+						if wsConn.UserId == requestProcesses.FriendUserId {
+							if err := wsConn.Conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+								log.Printf("socket publish failed: %g", err)
+							}
+						}
+
+					}
+				} else if requestProcesses.Type == "response" {
+
+					respond := requestProcesses.Respond
+
+					friendRequest, err := api.database.GetFriendRequestById(ctx, respond.Id)
+
+					if err != nil {
+
+						if err.Error() == "sql: no rows in result set" {
+							// notFound(w, r, errors.New("no friend request found with id: "+strconv.Itoa(int(respond.Id))))
+							continue
+						}
+
+						// internalServer(w, r, err)
+						continue
+					}
+
+					if respond.Status == "accepted" {
+
+						err := api.database.UpdateFriendRequestStatus(ctx, respond.Status, respond.Id)
+
+						if err != nil {
+							// internalServer(w, r, err)
+							continue
+						}
+
+						var friendship_id = "chat_" + uuid.New().String()
+
+						err1 := api.database.InsertFriendship(ctx, friendRequest.SentBy, friendRequest.SentTo, friendship_id)
+
+						err = api.database.InsertFriendship(ctx, friendRequest.SentTo, friendRequest.SentBy, friendship_id)
+
+						if err != nil || err1 != nil {
+							// internalServer(w, r, err)
+							continue
+						}
+
+						// s := StandardResponse{
+						// 	Status:  200,
+						// 	Message: "friend request accepted successfully",
+						// }
+
+						// writeJson(w, 200, s)
+						continue
+
+					} else if respond.Status == "rejected" {
+
+						err := api.database.UpdateFriendRequestStatus(ctx, respond.Status, respond.Id)
+
+						if err != nil {
+							// internalServer(w, r, err)
+							continue
+						}
+						//send notification maybe
+						err = api.database.DeleteFriendRequest(ctx, respond.Id)
+						if err != nil {
+							// internalServer(w, r, err)
+							continue
+						}
+
+						// s := StandardResponse{
+						// 	Status:  200,
+						// 	Message: "friend request rejected successfully",
+						// }
+
+						// writeJson(w, 200, s)
+						continue
+
+					}
+
+				}
+
 			} else if payloadType == "myFriends" {
 
 				response, err := api.database.GetFriends(ctx, username)
@@ -282,6 +422,7 @@ func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) 
 
 				friendsResponse, err := json.Marshal(response)
 
+				//send to me
 				if err := conn.WriteMessage(websocket.TextMessage, friendsResponse); err != nil {
 					log.Printf("socket publish failed: %g", err)
 				}

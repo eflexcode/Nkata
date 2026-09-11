@@ -28,13 +28,13 @@ type FriendRequest struct {
 }
 
 // ------------------------------ Friend Request ----------------------------------------------------------------------
-func (r *DataRepository) InsertFriendRequest(ctx context.Context, sentTo, sentBy string) error {
+func (r *DataRepository) InsertFriendRequest(ctx context.Context, sentTo, sentBy string) (FriendRequest, error) {
 
-	query := `INSERT INTO friendRequest(sent_by,sent_to,status,modified_at) VALUES($1,$2,$3,$4)`
+	query := `INSERT INTO friendRequest(sent_by,sent_to,status,modified_at) VALUES($1,$2,$3,$4) RETURNING id,sent_by,sent_to,status,created_at,modified_at`
+	var fRequest FriendRequest
+	err := r.db.QueryRowContext(ctx, query, sentBy, sentTo, "pending", time.Now()).Scan(&fRequest.ID, &fRequest.SentBy, &fRequest.SentTo, &fRequest.CreatedAt, &fRequest.ModifiedAt)
 
-	_, err := r.db.ExecContext(ctx, query, sentBy, sentTo, "pending", time.Now())
-
-	return err
+	return fRequest, err
 }
 
 func (r *DataRepository) DeleteFriendRequest(ctx context.Context, id int64) error {
@@ -379,14 +379,14 @@ func (d *DataRepository) GetFriends(ctx context.Context, username string) ([]Fri
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var friendship []Friendship
 
 	for row.Next() {
 
 		item := Friendship{}
 
-		err := row.Scan(&item.ID,&item.FriendShipId, &item.Username, &item.FriendUsername, &item.FriendshipType, &item.GroupID, &item.CreatedAt)
+		err := row.Scan(&item.ID, &item.FriendShipId, &item.Username, &item.FriendUsername, &item.FriendshipType, &item.GroupID, &item.CreatedAt)
 
 		if err != nil {
 			return nil, err
@@ -395,5 +395,5 @@ func (d *DataRepository) GetFriends(ctx context.Context, username string) ([]Fri
 		friendship = append(friendship, item)
 	}
 
-	return friendship,nil
+	return friendship, nil
 }
