@@ -37,7 +37,7 @@ const (
 type Message struct {
 	ID             int64  `json:"id"`
 	MessageID      string `json:"message_id"`
-	FriendshipID   string `json:"friendship_id"` //put groupd id here if group
+	FriendshipID   string `json:"friendship_id"` //put group id here if group
 	SenderUsername string `json:"sender_username"`
 	MessageType    string `json:"message_type"` //MessageChat,MessageReaction,MessageInfo
 	TextContent    string `json:"text_content"`

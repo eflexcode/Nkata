@@ -108,7 +108,7 @@ func IntiApi(config *Config) {
 			r.Post("/request/respond", apiService.RespondFriendRequest)
 			r.Delete("/request/delete/{id}", apiService.DeleteFriendRequest)
 			r.Get("/request/get-sent", apiService.GetFriendRequestSent)
-			r.Get("/request/get-received", apiService.GetFriendRequestRecieved)
+			r.Get("/request/get-received", apiService.GetFriendRequestReceived)
 			r.Get("/request/get-any",apiService.GetFriendRequestAny)
 			
 			r.Post("/group/create", apiService.CreateGroup)

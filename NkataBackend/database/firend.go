@@ -8,10 +8,10 @@ import (
 
 type Friendship struct {
 	ID             int64     `json:"id"`
-	FriendShipId   string    `json:"firendship_id"`
+	FriendShipId   string    `json:"friendship_id"`
 	Username       string    `json:"username"`
 	LastMessage    string    `json:"last_message"`
-	FirendUsername string    `json:"friend_username,omitempty"`
+	FriendUsername string    `json:"friend_username,omitempty"`
 	FriendshipType string    `json:"friendship_type"`    //one-on-one or group
 	GroupID        int64     `json:"group_id,omitempty"` //if group; remove id to remove member from group
 	CreatedAt      time.Time `json:"created_at"`
@@ -196,7 +196,7 @@ func (r *DataRepository) GetFriendRequestAny(ctx context.Context, username strin
 
 	offset := (page - 1) * limit
 
-	row, err := r.db.Query(query, username, username,"pending", limit, offset)
+	row, err := r.db.Query(query, username, username, "pending", limit, offset)
 
 	if err != nil {
 		return nil, err
@@ -297,9 +297,9 @@ func (d *DataRepository) UpdateFriendshipGroupId(ctx context.Context, username s
 	return err
 }
 
-func (d *DataRepository) InsertFriendshipGroup(ctx context.Context, username string, groupId int64) error {
+func (d *DataRepository) InsertFriendshipGroup(ctx context.Context, friendship_id, username string, groupId int64) error {
 
-	query := `INSERT INTO friendship(username,group_id,modified_at) VALUES($1,$2,$3,$4)`
+	query := `INSERT INTO friendship(friendship_id,username,group_id,modified_at) VALUES($1,$2,$3,$4)`
 
 	_, err := d.db.ExecContext(ctx, query, username, groupId, "group", time.Now())
 
@@ -323,7 +323,7 @@ func (d *DataRepository) DeleteFriendship(ctx context.Context, id int64) error {
 	return err
 }
 
-func (d *DataRepository) GetFriendshipByUserID(ctx context.Context, username, page, limit int64) (*PaginatedResponse, error) {
+func (d *DataRepository) GetFriendshipByUsername(ctx context.Context, username, string, page, limit int64) (*PaginatedResponse, error) {
 
 	offset := (page - 1) * limit
 	var totalCount int
@@ -331,9 +331,9 @@ func (d *DataRepository) GetFriendshipByUserID(ctx context.Context, username, pa
 	query := "SELECT * FROM friendship WHERE username = $1 LIMIT = $2 OFFSET = $3"
 	queryCount := `SELECT COUNT(*) WHERE username`
 
-	counrRow := d.db.QueryRowContext(ctx, queryCount, username)
+	countRow := d.db.QueryRowContext(ctx, queryCount, username)
 
-	err := counrRow.Scan(&totalCount)
+	err := countRow.Scan(&totalCount)
 
 	if err != nil {
 		return nil, err
@@ -351,7 +351,7 @@ func (d *DataRepository) GetFriendshipByUserID(ctx context.Context, username, pa
 
 		item := Friendship{}
 
-		err := row.Scan(&item.ID, &item.Username, &item.FirendUsername, &item.FriendshipType, &item.GroupID, &item.CreatedAt)
+		err := row.Scan(&item.ID, &item.Username, &item.FriendUsername, &item.FriendshipType, &item.GroupID, &item.CreatedAt)
 
 		if err != nil {
 			return nil, err
@@ -369,4 +369,31 @@ func (d *DataRepository) GetFriendshipByUserID(ctx context.Context, username, pa
 
 	return &p, nil
 
+}
+
+func (d *DataRepository) GetFriends(ctx context.Context, username string) ([]Friendship, error) {
+	query := "SELECT * FROM friendship WHERE username = $1"
+
+	row, err := d.db.QueryContext(ctx, query, username)
+
+	if err != nil {
+		return nil, err
+	}
+	
+	var friendship []Friendship
+
+	for row.Next() {
+
+		item := Friendship{}
+
+		err := row.Scan(&item.ID,&item.FriendShipId, &item.Username, &item.FriendUsername, &item.FriendshipType, &item.GroupID, &item.CreatedAt)
+
+		if err != nil {
+			return nil, err
+		}
+
+		friendship = append(friendship, item)
+	}
+
+	return friendship,nil
 }

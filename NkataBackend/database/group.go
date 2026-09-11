@@ -3,15 +3,18 @@ package database
 import (
 	"context"
 	"errors"
+
+	"github.com/google/uuid"
 )
 
 type Group struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	PicUrl      string `json:"pic_url"`
-	Description string `json:"description"`
-	CreatedAt   string `json:"created_at"`
-	ModifiedAt  string `json:"modified_at"`
+	ID           int64  `json:"id"`
+	FriendshipId string `json:"friendship_id"`
+	Name         string `json:"name"`
+	PicUrl       string `json:"pic_url"`
+	Description  string `json:"description"`
+	CreatedAt    string `json:"created_at"`
+	ModifiedAt   string `json:"modified_at"`
 }
 
 type GroupMember struct {
@@ -29,15 +32,15 @@ type GroupMember struct {
 // 	CreatedAt string `json:"created_at"`
 // }
 
-func (d *DataRepository) InsertGroup(ctx context.Context, name string) (int64, error) {
-
-	query := `INSERT INTO groupu(name,pic_url,description) VALUES($1,$2,$3) RETURNING id `
+func (d *DataRepository) InsertGroup(ctx context.Context, name string) (int64, string,error) {
+	var friendship_id = "group_" + uuid.New().String()
+	query := `INSERT INTO groupu(friendship_id,name,pic_url,description) VALUES($1,$2,$3) RETURNING id `
 
 	var id int64
 
-	err := d.db.QueryRowContext(ctx, query, name, "", "").Scan(&id)
+	err := d.db.QueryRowContext(ctx, query, friendship_id, name, "", "").Scan(&id)
 
-	return id, err
+	return id,friendship_id, err
 }
 
 func (d *DataRepository) GetGroupById(cxt context.Context, id int64) (*Group, error) {
@@ -107,7 +110,7 @@ func (d *DataRepository) DeleteGroup(ctx context.Context, id int64) error {
 	return err
 }
 
-//------------------------------ GroupMemeber ----------------------------------------------------------------------
+//------------------------------ GroupMember ----------------------------------------------------------------------
 
 func (d *DataRepository) InsertGroupMember(ctx context.Context, username string, groupId int64, role string) error {
 
@@ -136,7 +139,7 @@ func (d *DataRepository) GetGroupMemberByUsername(cxt context.Context, username 
 		return nil, err
 	}
 
-	return &member,err
+	return &member, err
 }
 
 func (d *DataRepository) GetGroupMembersByGroupId(cxt context.Context, id, limit, page int64) (*PaginatedResponse, error) {
@@ -183,19 +186,19 @@ func (d *DataRepository) GetGroupMembersByGroupId(cxt context.Context, id, limit
 	return &p, nil
 }
 
-//remove from group
-func (d *DataRepository) DeleteGroupMember(ctx context.Context, username string,id int64) error {
+// remove from group
+func (d *DataRepository) DeleteGroupMember(ctx context.Context, username string, id int64) error {
 	query := `DELETE FROM group_member WHERE username = $1 AND group_id = $2`
 
-	_, err := d.db.ExecContext(ctx, query, username,id)
+	_, err := d.db.ExecContext(ctx, query, username, id)
 
 	return err
 }
 
-func (d *DataRepository) DeleteAllGroupMembers(ctx context.Context,id int64) error{
-		query := `DELETE FROM group_member WHERE group_id = $1`
+func (d *DataRepository) DeleteAllGroupMembers(ctx context.Context, id int64) error {
+	query := `DELETE FROM group_member WHERE group_id = $1`
 
-	_, err := d.db.ExecContext(ctx, query,id)
+	_, err := d.db.ExecContext(ctx, query, id)
 
 	return err
 }

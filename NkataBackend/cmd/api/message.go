@@ -8,6 +8,7 @@ import (
 	"main/database"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -56,10 +57,10 @@ type WsConnectionManager struct {
 
 // var g = map[string] map[string]
 
-var connections map[string]*websocket.Conn
-var conns = WsConnectionManager{
-	Connections: connections,
-}
+// var connections map[string]*websocket.Conn
+// var conns = WsConnectionManager{
+// 	Connections: connections,
+// }
 
 type WsMessage struct {
 	FriendshipID string `json:"friendship_id"` //put grouped id here if group
@@ -74,27 +75,68 @@ type WsNotification struct {
 	Message  string `json:"message"`
 }
 
-type WsPayload struct {
-	UserId         string         `json:"user_id"`
-	PayloadType    string         `json:"payload_type"` //notification,message
-	MessagePayload MessagePayload `json:"message"`
-	WsNotification WsNotification `json:"notification"`
+type ProfileUpdate struct {
+	DisplayName      string `json:"display_name"`
+	ProfilePicBinary string `json:"profile_pic_binary"`
+	Online           string `json:"online"` //note i send date if date is greater than 1 min off line
 }
 
-func addConnection(userId string, conn *websocket.Conn) {
-	conns.Lock()
-	conns.Connections[userId] = conn
-	conns.Unlock()
+type ProfileUpdateReturnPayload struct {
+	DisplayName           string `json:"display_name"`
+	ProfilePicDownloadUrl string `json:"profile_pic_download_url"`
+	Online                string `json:"online"` //note i send date if date is greater than 1 min off line
+}
+
+type WsPayload struct {
+	UserId         string         `json:"user_id"`
+	PayloadType    string         `json:"payload_type"` //notification,message,friendRequest,myFriends,profileUpdate
+	MessagePayload MessagePayload `json:"message"`
+	WsNotification WsNotification `json:"notification"`
+	ProfileUpdate  ProfileUpdate  `json:"profile_update"`
+}
+
+type WsStructure struct {
+	sync.RWMutex
+	UserId      string          `json:"user_id"`
+	Conn        *websocket.Conn `json:"conn"`
+	FriendShips []string        `json:"friendships"`
+}
+
+type WsHandShackPayload struct {
+	FriendShips []string `json:"friendships"`
+}
+
+var conns []*WsStructure
+
+func addConnection(userId string, conn *websocket.Conn, friendShips []string) {
+
+	w := WsStructure{
+		UserId:      userId,
+		Conn:        conn,
+		FriendShips: friendShips,
+	}
+	_ = append(conns, &w)
+	// conns.Lock()
+	// conns.Connections[userId] = conn
+	// conns.Unlock()
 }
 
 func deleteConnection(userId string) {
-	conns.Lock()
-	defer conns.Unlock()
 
-	if conn, exist := conns.Connections[userId]; exist {
-		conn.Close()
-		delete(conns.Connections, userId)
+	for conPosition := range conns {
+		var con = conns[conPosition]
+		con.Conn.Close()
+		conns = slices.Delete(conns, conPosition, conPosition+1) //starts delete at current position and end at current position plus 1 the plus one would not get deleted: if it is plus 2 the 2 would not get deleted
+		return
 	}
+
+	// conns.Lock()
+	// defer conns.Unlock()
+
+	// if conn, exist := conns.Connections[userId]; exist {
+	// 	conn.Close()
+	// 	delete(conns.Connections, userId)
+	// }
 }
 
 // @Summary General ws handler
@@ -109,6 +151,12 @@ func deleteConnection(userId string) {
 // @Router /v1/general-authenticated/ws/{user_id} [post]
 func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) {
 
+	var wsHandShackPayload WsHandShackPayload
+	if err := readJson(w, r, &wsHandShackPayload); err != nil {
+		badRequest(w, r, errors.New("json payload cannot be decoded"))
+		return
+	}
+
 	conn, err := upgradeConn.Upgrade(w, r, nil)
 	if err != nil {
 		internalServer(w, r, errors.New("failed to upgrade connection to ws"))
@@ -117,8 +165,16 @@ func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) 
 
 	user_id := chi.URLParam(r, "user_id")
 
-	addConnection(user_id, conn)
+	addConnection(user_id, conn, wsHandShackPayload.FriendShips)
 	defer deleteConnection(user_id)
+
+	username, err := getUsernameFromCtx(r.Context())
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
 
 	for {
 
@@ -143,21 +199,18 @@ func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) 
 
 			if payloadType == "message" {
 
-				var message = payload.MessagePayload
+				var messageP = payload.MessagePayload
 				var messageId = uuid.New().String()
 
-				//broadcast message before insert for latency
-
 				var now = time.Now()
-				
+
 				message := database.Message{
-					ID: int64(uuid.New()),
 					MessageID:      messageId,
-					FriendshipID:   message.FriendshipID,
-					SenderUsername: message.SenderUsername,
-					MessageType:    message.MessageType,
-					TextContent:    message.TextContent,
-					Media:          database.Media(message.Media),
+					FriendshipID:   messageP.FriendshipID,
+					SenderUsername: messageP.SenderUsername,
+					MessageType:    messageP.MessageType,
+					TextContent:    messageP.TextContent,
+					Media:          database.Media(messageP.Media),
 					CreatedAt:      now.String(),
 					ModifiedAt:     now.String(),
 				}
@@ -170,8 +223,9 @@ func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) 
 						MessageId: messageId,
 						Info:      "failed to insert with this id in db please remove",
 					}
+
 					log.Printf("%v", info)
-					
+
 					byteResponse, err := json.Marshal(message)
 
 					if err != nil {
@@ -179,24 +233,245 @@ func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) 
 						return
 					}
 
-					//not done yet
-					if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
-						log.Panicf("socket publish failed: %g", err)
+					// search all  connections/ connected user
+					for conPosition := range conns {
+						wsConn := conns[conPosition]
+						if wsConn.UserId == userId {
+							//my user id return/continue
+							// note once sent it enters user(sender chat first sqlite in sender device) so no need to send back to the person yet might need to for seen update
+							continue
+						}
+						//indididual user friendships
+						friendships := wsConn.FriendShips
+						for fri := range friendships {
+							//each friend
+							friend := friendships[fri]
+							//check if friendship id equals so therefore we are friends or in same group
+							if messageP.FriendshipID == friend {
+								//publish in that friend connection
+								if err := wsConn.Conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+									log.Printf("socket publish failed: %g", err)
+								}
+								//TODO might send back to self to for seen
+								var splitedFriendshipId = strings.Split(friend, "_")
+								if splitedFriendshipId[0] == "chat" {
+									continue
+								}
+							}
+						}
 					}
+					//not done yet
+					// if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+					// 	log.Panicf("socket publish failed: %g", err)
+					// }
 
 				}
 
 			} else if payloadType == "notification" {
 
+			} else if payloadType == "friendRequest" {
+
+			} else if payloadType == "myFriends" {
+
+				response, err := api.database.GetFriends(ctx, username)
+
+				if err != nil {
+					internalServer(w, r, err)
+					continue
+				}
+
+				friendsResponse, err := json.Marshal(response)
+
+				if err := conn.WriteMessage(websocket.TextMessage, friendsResponse); err != nil {
+					log.Printf("socket publish failed: %g", err)
+				}
+			} else if payloadType == "profileUpdate" {
+				profileUpdate := payload.ProfileUpdate
+				var profileUpdateR ProfileUpdateReturnPayload
+				if profileUpdate.ProfilePicBinary != "" {
+					var extention = ".png"
+					var fileBinary []byte
+
+					src := []byte(profileUpdate.ProfilePicBinary)
+					fileBinary = make([]byte, len(src))
+					// for dbytes, char := range profileUpdate.ProfilePicBinary {
+					// 	var g = string(char)
+					// 	fileBinary = append(fileBinary, byte(g))
+					// }
+
+					currentTime := time.Now().UnixMilli()
+
+					currentTimeString := strconv.Itoa(int(currentTime)) + extention
+
+					destinationFile, err := os.Create("/home/ifeanyi/nkata_storage/chat_storage/" + currentTimeString)
+
+					if err != nil {
+						internalServer(w, r, err)
+						continue
+					}
+
+					defer destinationFile.Close()
+
+					i, err := destinationFile.Write([]byte(fileBinary))
+					if err != nil {
+						internalServer(w, r, err)
+						continue
+					}
+
+					if i == 0 {
+						internalServer(w, r, errors.New("failed to write file sent"))
+						continue
+					}
+
+					url := "http://localhost:5557/v1/media/profiles/" + currentTimeString
+					err = api.database.UpdateProfilePicUrl(ctx, username, url)
+
+					if err != nil {
+						internalServer(w, r, err)
+						continue
+					}
+					profileUpdateR = ProfileUpdateReturnPayload{
+						ProfilePicDownloadUrl: url,
+						DisplayName:           profileUpdate.DisplayName,
+						Online:                profileUpdate.Online,
+					}
+
+				} else {
+					profileUpdateR = ProfileUpdateReturnPayload{
+						ProfilePicDownloadUrl: "url",
+						DisplayName:           profileUpdate.DisplayName,
+						Online:                profileUpdate.Online,
+					}
+				}
+
+				byteResponse, err := json.Marshal(profileUpdateR)
+				if err != nil {
+					log.Printf("failed to parse response to byte: %v", err)
+					return
+				}
+
+				// search all  connections/ connected user
+				for conPosition := range conns {
+					wsConn := conns[conPosition]
+					if wsConn.UserId == userId {
+						//my user id return/continue
+						// note once sent it enters user(sender chat first sqlite in sender device) so no need to send back to the person yet might need to for seen update
+						continue
+					}
+					//indididual user friendships
+					friendships := wsConn.FriendShips
+					for fri := range friendships {
+						//each friend
+						_ = friendships[fri]
+						//check if friendship id equals so therefore we are friends or in same group
+						// if messageP.FriendshipID == friend {
+						//publish in that friend connection
+						if err := wsConn.Conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+							log.Printf("socket publish failed: %g", err)
+						}
+
+						// }
+					}
+				}
 			}
 
 		case websocket.BinaryMessage:
+			// var payload WsPayload
+			// if err := json.Unmarshal(data, &payload); err != nil {
+			// 	log.Printf("Invalid payload sent: %v", err)
+			// 	return
+			// }
+
+			// var userId = payload.UserId
+			// var payloadType = payload.PayloadType
+			// if payloadType == "message" {
+
+			// 	fileTypeHttp := http.DetectContentType(data)
+
+			// 	var fileTypeHttpSplit = strings.Split(fileTypeHttp, "/")
+
+			// 	fileExtention := "." + fileTypeHttpSplit[1]
+
+			// 	currentTime := time.Now().UnixMilli()
+
+			// 	currentTimeString := strconv.Itoa(int(currentTime)) + fileExtention
+
+			// 	destinationFile, err := os.Create("/home/ifeanyi/nkata_storage/chat_storage/" + currentTimeString)
+
+			// 	if err != nil {
+			// 		internalServer(w, r, err)
+			// 		return
+			// 	}
+
+			// 	defer destinationFile.Close()
+
+			// 	i, err := destinationFile.Write(data)
+			// 	if err != nil {
+			// 		internalServer(w, r, err)
+			// 		return
+			// 	}
+
+			// 	if i == 0 {
+			// 		internalServer(w, r, errors.New("failed to write file sent"))
+			// 		return
+			// 	}
+			// 	ctx := r.Context()
+			// 	username, err := getUsernameFromCtx(ctx)
+			// 	if err != nil {
+			// 		internalServer(w, r, err)
+			// 		return
+			// 	}
+			// 	now := time.Now()
+			// 		var messageId = uuid.New().String()
+			// 	message := database.Message{
+			// 		MessageID:      messageId,
+			// 		FriendshipID:   friendshipId,
+			// 		SenderUsername: username,
+			// 		MessageType:    "MessageChat",
+			// 		Media:          database.Media{MediaUrl: url, MediaType: fileExtention},
+			// 		CreatedAt:      now.String(),
+			// 		ModifiedAt:     now.String(),
+			// 	}
+
+			// 	byteResponse, err := json.Marshal(message)
+
+			// 	if err != nil {
+			// 		log.Printf("failed to parse response to byte: %v", err)
+			// 		return
+			// 	}
+
+			// 	if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+			// 		log.Panicf("socket publish failed: %t", err)
+			// 	}
+
+			// 	err = api.database.InsertMessageMedia(ctx, messageId, friendshipId, username, "MessageChat", url, fileExtention, now)
+
+			// 	if err != nil {
+
+			// 		info := MessageNotInDb{
+			// 			MessageId: messageId,
+			// 			Info:      "failed to insert with this id in db please remove",
+			// 		}
+
+			// 		byteResponse, err := json.Marshal(info)
+
+			// 		if err != nil {
+			// 			log.Printf("failed to parse response 2 to byte: %v", err)
+			// 			return
+			// 		}
+
+			// 		if err := conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+			// 			log.Panicf("socket publish failed: %g", err)
+			// 		}
+
+			// }
+			// } else {
 
 		}
 	}
-
 }
 
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // @Summary Message ws connection
 // @Description Responds with json
 // @Tags Message
@@ -378,7 +653,7 @@ func (api *ApiService) MessageWsHandler(w http.ResponseWriter, r *http.Request) 
 			}
 
 		default:
-			log.Printf("cannot determin incoming socket data type: %v", err)
+			log.Printf("cannot determine incoming socket data type: %v", err)
 		}
 
 	}

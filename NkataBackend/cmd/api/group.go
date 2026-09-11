@@ -23,7 +23,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type CreatGroup struct {
+type CreateGroup struct {
 	Name string `json:"name"`
 }
 
@@ -35,7 +35,7 @@ type UpdateGroupPayload struct {
 
 type AddGroup struct {
 	Username string `json:"username"`
-	Id       int64  `json:"id"`
+	Id       int64  `json:"id"` // group id
 }
 
 // @Summary Create a new group
@@ -50,7 +50,7 @@ type AddGroup struct {
 // @Router /v1/firendship/group/create [post]
 func (api *ApiService) CreateGroup(w http.ResponseWriter, r *http.Request) {
 
-	var group CreatGroup
+	var group CreateGroup
 
 	ctx := r.Context()
 
@@ -66,7 +66,7 @@ func (api *ApiService) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := api.database.InsertGroup(ctx, group.Name)
+	id, friendshipId, err := api.database.InsertGroup(ctx, group.Name)
 
 	if err != nil {
 		internalServer(w, r, err)
@@ -80,7 +80,7 @@ func (api *ApiService) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = api.database.InsertFriendshipGroup(ctx, username, id)
+	err = api.database.InsertFriendshipGroup(ctx, friendshipId, username, id)
 
 	if err != nil {
 		internalServer(w, r, err)
@@ -89,14 +89,15 @@ func (api *ApiService) CreateGroup(w http.ResponseWriter, r *http.Request) {
 
 	s := StandardResponse{
 		Status:  200,
-		Message: "Group created succefully",
+		Message: "Group created successfully",
 	}
 
 	writeJson(w, 200, s)
 
 }
 
-//  GetGroup
+//	GetGroup
+//
 // @Summary Get Group by id
 // @Description Responds with json
 // @Tags Friendship
@@ -135,7 +136,7 @@ func (api *ApiService) GetGroupById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJson(w, http.StatusOK, group)
-	setRedisGroup(ctx,api.database,int64(idInt),api.rClient)
+	setRedisGroup(ctx, api.database, int64(idInt), api.rClient)
 
 }
 
@@ -171,12 +172,12 @@ func (api *ApiService) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	member, err := api.database.GetGroupMemberByUsername(ctx, username, idInt)
 
 	if err != nil {
-		unauthorized(w, r, errors.New("user does not have permision to perform this action"))
+		unauthorized(w, r, errors.New("user does not have permission to perform this action"))
 		return
 	}
 
 	if member.Role != "admin" {
-		unauthorized(w, r, errors.New("user does not have permision to perform this action"))
+		unauthorized(w, r, errors.New("user does not have permission to perform this action"))
 		return
 	}
 
@@ -196,7 +197,7 @@ func (api *ApiService) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 
 	s := StandardResponse{
 		Status:  200,
-		Message: "group deleted succefully",
+		Message: "group deleted successfully",
 	}
 
 	writeJson(w, 200, s)
@@ -261,14 +262,21 @@ func (api *ApiService) AddGroupMember(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	err := api.database.InsertGroupMember(ctx, newMember.Username, newMember.Id, "member")
+	group, err := api.database.GetGroupById(ctx, newMember.Id)
+	if err != nil {
+		badRequest(w, r, err)
+		return
+	}
+	err = api.database.InsertGroupMember(ctx, newMember.Username, newMember.Id, "member")
 
 	if err != nil {
 		internalServer(w, r, err)
 		return
 	}
 
-	err = api.database.InsertFriendshipGroup(ctx, newMember.Username, newMember.Id)
+	friendshipId := group.FriendshipId
+
+	err = api.database.InsertFriendshipGroup(ctx, friendshipId, newMember.Username, newMember.Id)
 
 	if err != nil {
 		internalServer(w, r, err)
@@ -346,7 +354,7 @@ func (api *ApiService) RemoveGroupMember(w http.ResponseWriter, r *http.Request)
 	writeJson(w, 200, s)
 }
 
-// @Summary Update group info 
+// @Summary Update group info
 // @Description Responds with json
 // @Tags Friendship
 // @Accept json
@@ -381,7 +389,7 @@ func (api *ApiService) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJson(w, http.StatusOK, s)
-	setRedisGroup(ctx,api.database,int64(group.Id),api.rClient)
+	setRedisGroup(ctx, api.database, int64(group.Id), api.rClient)
 }
 
 // @Summary Upload Group Pic
@@ -468,7 +476,7 @@ func (api *ApiService) UploadGroupPic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJson(w, http.StatusOK, s)
-	setRedisGroup(ctx,api.database,int64(idInt),api.rClient)
+	setRedisGroup(ctx, api.database, int64(idInt), api.rClient)
 }
 
 // @Summary Download Group Pic

@@ -46,8 +46,8 @@ func (apiService *ApiService) SendFriendRequest(w http.ResponseWriter, r *http.R
 
 	ctx := r.Context()
 
-	if username == payload.FriendUsername{
-		forbidden(w,r,errors.New("user cannot send friend request to self"))
+	if username == payload.FriendUsername {
+		forbidden(w, r, errors.New("user cannot send friend request to self"))
 		return
 	}
 
@@ -108,7 +108,7 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	frendRequest, err := api.database.GetFriendRequestById(ctx, payload.Id)
+	friendRequest, err := api.database.GetFriendRequestById(ctx, payload.Id)
 
 	if err != nil {
 
@@ -130,11 +130,11 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 			return
 		}
 
-		var friendship_id = uuid.New().String()
+		var friendship_id = "chat_" + uuid.New().String()
 
-		err1 := api.database.InsertFriendship(ctx, frendRequest.SentBy, frendRequest.SentTo, friendship_id)
+		err1 := api.database.InsertFriendship(ctx, friendRequest.SentBy, friendRequest.SentTo, friendship_id)
 
-		// err = api.database.InsertFriendship(ctx, frendRequest.SentTo, frendRequest.SentBy, friendship_id)
+		err = api.database.InsertFriendship(ctx, friendRequest.SentTo, friendRequest.SentBy, friendship_id)
 
 		if err != nil || err1 != nil {
 			internalServer(w, r, err)
@@ -143,7 +143,7 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 
 		s := StandardResponse{
 			Status:  200,
-			Message: "firend request accepted successfully",
+			Message: "friend request accepted successfully",
 		}
 
 		writeJson(w, 200, s)
@@ -173,7 +173,7 @@ func (api *ApiService) RespondFriendRequest(w http.ResponseWriter, r *http.Reque
 
 }
 
-func(api *ApiService) GetFriendRequestAny(w http.ResponseWriter, r *http.Request){
+func (api *ApiService) GetFriendRequestAny(w http.ResponseWriter, r *http.Request) {
 	username, err := getUsernameFromCtx(r.Context())
 
 	if err != nil {
@@ -237,7 +237,7 @@ func (api *ApiService) DeleteFriendRequest(w http.ResponseWriter, r *http.Reques
 
 	if err != nil {
 
-		if err.Error() == "sql: no rows in result set"  || err.Error() == "sql: Rows are closed"{
+		if err.Error() == "sql: no rows in result set" || err.Error() == "sql: Rows are closed" {
 			notFound(w, r, errors.New("no request found with id: "+id))
 			return
 		}
@@ -319,7 +319,7 @@ func (api *ApiService) GetFriendRequestSent(w http.ResponseWriter, r *http.Reque
 // @Failure 400 {object} errorslope
 // @Failure 500 {object} errorslope
 // @Router /v1/firendship/request/get-recieved  [get]
-func (api *ApiService) GetFriendRequestRecieved(w http.ResponseWriter, r *http.Request) {
+func (api *ApiService) GetFriendRequestReceived(w http.ResponseWriter, r *http.Request) {
 
 	username, err := getUsernameFromCtx(r.Context())
 
@@ -343,6 +343,27 @@ func (api *ApiService) GetFriendRequestRecieved(w http.ResponseWriter, r *http.R
 
 	response, err := api.database.GetFriendRequestSentTo(ctx, username, int64(pageInt), int64(limitInt))
 
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	writeJson(w, 200, response)
+
+}
+
+func (api *ApiService) GetMyFriends(w http.ResponseWriter, r *http.Request) {
+	username, err := getUsernameFromCtx(r.Context())
+
+	if err != nil {
+		internalServer(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+	
+	response, err := api.database.GetFriends(ctx,username)
+	
 	if err != nil {
 		internalServer(w, r, err)
 		return

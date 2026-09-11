@@ -194,7 +194,7 @@ func (api *ApiService) UploadProfilPic(w http.ResponseWriter, r *http.Request) {
 
 	s := StandardResponse{
 		Status:  http.StatusOK,
-		Message: "user profile picture updated successfuly",
+		Message: "user profile picture updated successfully",
 	}
 
 	writeJson(w, http.StatusOK, s)
@@ -268,7 +268,7 @@ func (api *ApiService) Update(w http.ResponseWriter, r *http.Request) {
 
 	s := StandardResponse{
 		Status:  http.StatusOK,
-		Message: "user details updated successfuly",
+		Message: "user details updated successfully",
 	}
 
 	writeJson(w, http.StatusOK, s)
@@ -407,7 +407,7 @@ func (api *ApiService) AddEmailVerify(w http.ResponseWriter, r *http.Request) {
 
 	s := StandardResponse{
 		Status:  http.StatusOK,
-		Message: "Email updated succesfully",
+		Message: "Email updated successfully",
 	}
 
 	writeJson(w, http.StatusOK, s)
