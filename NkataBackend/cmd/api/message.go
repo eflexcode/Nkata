@@ -376,10 +376,35 @@ func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) 
 							continue
 						}
 
-						// s := StandardResponse{
-						// 	Status:  200,
-						// 	Message: "friend request accepted successfully",
-						// }
+						user, err := api.database.GetByUsername(ctx, friendRequest.SentBy)
+
+						if err != nil {
+							continue
+						}
+
+						noti, err := api.database.InsertNotification(ctx, strconv.Itoa(int(user.ID)), user.Username, "Friend request accepted", user.DisplayName+" accepted your friend request", user.ImageUrl)
+
+						if err != nil {
+							continue
+						}
+
+						for conPosition := range conns {
+							wsConn := conns[conPosition]
+							if wsConn.UserId == strconv.Itoa(int(user.ID)) {
+								byteResponse, err := json.Marshal(noti)
+								if err != nil {
+									log.Printf("failed to parse response to byte: %v", err)
+									return
+								}
+								if err := wsConn.Conn.WriteMessage(websocket.TextMessage, byteResponse); err != nil {
+									log.Printf("socket publish failed: %g", err)
+								}
+								//my user id return/continue
+								// note once sent it enters user(sender chat first sqlite in sender device) so no need to send back to the person yet might need to for seen update
+								continue
+							}
+
+						}
 
 						// writeJson(w, 200, s)
 						continue
