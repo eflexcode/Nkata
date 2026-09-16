@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -64,4 +65,23 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.retrofit)
 
+    //mvvm
+    implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.multidex)
+
+    //img loading
+    implementation(libs.coil.compose)
+    implementation (libs.glide)
+    ksp ("com.github.bumptech.glide:compiler:4.13.2")
+//    kapt("com.github.bumptech.glide:compiler:4.13.2")
+    //database
+    implementation (libs.androidx.room.runtime)
+    ksp (libs.androidx.room.compiler)
+
+    // Kotlin Extensions and Coroutines support for Room
+    implementation (libs.androidx.room.ktx)
+
+    //color rendering
+    implementation(libs.androidx.palette)
 }

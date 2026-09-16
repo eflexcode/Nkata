@@ -1,0 +1,5 @@
+package com.ifeanyi.nkataandroid.logic.database.room.model
+
+@Enti
+data class Profile() {
+}
