@@ -7,15 +7,13 @@ plugins {
 android {
     namespace = "com.ifeanyi.nkataandroid"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
+        version = release(37)
     }
 
     defaultConfig {
         applicationId = "com.ifeanyi.nkataandroid"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -68,6 +66,7 @@ dependencies {
     //mvvm
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+//    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.multidex)
 
     //img loading
