@@ -11,11 +11,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.room.Room
+import com.ifeanyi.nkataandroid.logic.Util
+import com.ifeanyi.nkataandroid.logic.database.room.NkataDatabase
 import com.ifeanyi.nkataandroid.ui.theme.NkataAndroidTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+       val appDb = Room.databaseBuilder(
+            application,
+            NkataDatabase::class.java,
+            Util.DatabaseName
+        ).build()
+
         enableEdgeToEdge()
         setContent {
             NkataAndroidTheme {

@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class Message(
     @PrimaryKey(autoGenerate = true)
     val id: Int? = null,
+    val localChatId: Int,
     val cloudId: Int? = null,
     val messageID: String,
     val friendshipID: String,

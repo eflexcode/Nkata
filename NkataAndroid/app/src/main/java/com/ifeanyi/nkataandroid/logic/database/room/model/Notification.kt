@@ -1,6 +1,5 @@
 package com.ifeanyi.nkataandroid.logic.database.room.model
 
-import android.R
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -13,7 +12,8 @@ data class Notification(
     val username: String,
     val tile:  String,
     val message: String,
-    val seen: R.bool,
+    val seen: Boolean,
     val createdAt: String,
+    val modifiedAt: String
 ) {
 }

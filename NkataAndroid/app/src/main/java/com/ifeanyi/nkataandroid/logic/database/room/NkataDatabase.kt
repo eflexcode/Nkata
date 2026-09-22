@@ -8,8 +8,9 @@ import com.ifeanyi.nkataandroid.logic.database.room.model.Friendship
 import com.ifeanyi.nkataandroid.logic.database.room.model.Message
 import com.ifeanyi.nkataandroid.logic.database.room.model.Notification
 import com.ifeanyi.nkataandroid.logic.database.room.model.Profile
+import com.ifeanyi.nkataandroid.logic.database.room.model.Token
 
-@Database(entities = [Profile::class, Friendship::class, Chat::class, Notification::class, Message::class], version = 1)
+@Database(entities = [Profile::class, Friendship::class, Chat::class, Notification::class, Message::class, Token::class], version = 1)
 abstract class NkataDatabase: RoomDatabase() {
 
     abstract fun dao(): NkataDatabaseDao

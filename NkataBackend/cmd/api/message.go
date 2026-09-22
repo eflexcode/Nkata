@@ -159,7 +159,7 @@ func deleteConnection(userId string) {
 // @Failure 500 {object} errorslope
 // @Router /v1/general-authenticated/ws/{user_id} [post]
 func (api *ApiService) GeneralWsHandler(w http.ResponseWriter, r *http.Request) {
-
+//TDOD update message
 	var wsHandShackPayload WsHandShackPayload
 	if err := readJson(w, r, &wsHandShackPayload); err != nil {
 		badRequest(w, r, errors.New("json payload cannot be decoded"))
