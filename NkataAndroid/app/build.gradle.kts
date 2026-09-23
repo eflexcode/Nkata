@@ -63,6 +63,9 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.retrofit)
 
+    //okhttp
+    implementation(libs.okhttp)
+
     //mvvm
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -72,7 +75,7 @@ dependencies {
     //img loading
     implementation(libs.coil.compose)
     implementation (libs.glide)
-    ksp ("com.github.bumptech.glide:compiler:4.13.2")
+    ksp (libs.compiler)
 //    kapt("com.github.bumptech.glide:compiler:4.13.2")
     //database
     implementation (libs.androidx.room.runtime)

@@ -7,6 +7,7 @@ import com.ifeanyi.nkataandroid.logic.database.room.model.Chat
 import com.ifeanyi.nkataandroid.logic.database.room.model.Friendship
 import com.ifeanyi.nkataandroid.logic.database.room.model.MMedia
 import com.ifeanyi.nkataandroid.logic.database.room.model.Message
+import com.ifeanyi.nkataandroid.logic.database.room.model.NetworkBaseUrl
 import com.ifeanyi.nkataandroid.logic.database.room.model.Notification
 import com.ifeanyi.nkataandroid.logic.database.room.model.Profile
 import com.ifeanyi.nkataandroid.logic.database.room.model.Token
@@ -135,4 +136,16 @@ interface NkataDatabaseDao {//can also be called databaseRepository
 
     @Query("DELETE FROM message WHERE senderUsername=:senderUsername")
     suspend fun deleteMessageEmptyChat(senderUsername: String)
+
+    //Message end----------------------------------------------------------------------------------------------------------------------------------------------
+    @Insert
+    suspend fun insertBaseUrl(baseUrl: NetworkBaseUrl)
+
+    //TODO update message call on server
+    @Query("SELECT * FROM NetworkBaseUrl")
+    suspend fun getBaseUrl():  Flow<List<NetworkBaseUrl>>
+
+    @Query("DELETE FROM NetworkBaseUrl")
+    suspend fun deleteBaseUrl()
+
 }

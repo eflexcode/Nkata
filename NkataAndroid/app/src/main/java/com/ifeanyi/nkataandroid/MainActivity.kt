@@ -1,5 +1,6 @@
 package com.ifeanyi.nkataandroid
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,13 +20,13 @@ import com.ifeanyi.nkataandroid.ui.theme.NkataAndroidTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-       val appDb = Room.databaseBuilder(
-            application,
-            NkataDatabase::class.java,
-            Util.DatabaseName
-        ).build()
-
+        if (intent?.action == Intent.ACTION_SEND) {
+            if ("text/plain" == intent.type) {
+                //for text forwarding in
+            } else if (intent.type?.startsWith("image/") == true) {
+                //for img forwarding  in
+            }
+        }
         enableEdgeToEdge()
         setContent {
             NkataAndroidTheme {

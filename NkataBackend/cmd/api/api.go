@@ -89,7 +89,7 @@ func IntiApi(config *Config) {
 
 		r.Route("/general-authenticated", func(r chi.Router) {
 			r.Use(HandleJWTAuth)
-			r.Post("/ws/{user_id}", apiService.GeneralWsHandler)
+			r.Get("/ws/{user_id}", apiService.GeneralWsHandler)
 		})
 
 		r.Route("/user", func(r chi.Router) {
