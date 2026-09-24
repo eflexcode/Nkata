@@ -12,7 +12,7 @@ class MainReceiver : BroadcastReceiver() {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             Log.d("BootReceiver", "Device finished booting!")
 
-            var mService = Intent(context, MainService::class.java)
+            val mService = Intent(context, MainService::class.java)
 
             ContextCompat.startForegroundService(context,mService)
             // Start main service

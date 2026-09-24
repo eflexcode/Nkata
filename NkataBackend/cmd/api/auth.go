@@ -157,7 +157,7 @@ func (apiService *ApiService) SignInUsername(w http.ResponseWriter, r *http.Requ
 			unauthorized(w, r,  errors.New("invalid email or password"))
 			return
 		}
-		internalServer(w, r, errors.New("somthing went wrong"))
+		internalServer(w, r, errors.New("something went wrong"))
 		return
 	}
 
@@ -223,7 +223,7 @@ func (api *ApiService) SignInEmail(w http.ResponseWriter, r *http.Request) {
 			unauthorized(w, r,  errors.New("invalid email or password"))
 			return
 		}
-		internalServer(w, r, errors.New("somthing went wrong"))
+		internalServer(w, r, errors.New("something went wrong"))
 		return
 	}
 
