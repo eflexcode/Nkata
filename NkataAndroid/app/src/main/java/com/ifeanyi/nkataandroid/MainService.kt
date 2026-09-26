@@ -5,13 +5,20 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.room.Room
 import com.ifeanyi.nkataandroid.logic.Util
 import com.ifeanyi.nkataandroid.logic.database.room.NkataDatabase
 import com.ifeanyi.nkataandroid.logic.network.okhttp.WsListener
+import com.ifeanyi.nkataandroid.logic.network.retrofit.apiservice.NkataRetrofitClient
+import com.ifeanyi.nkataandroid.logic.repository.LogicRepository
+import com.ifeanyi.nkataandroid.logic.repository.impl.LogicRepositoryImpl
+import com.ifeanyi.nkataandroid.ui.viewmodel.NkataViewModel
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class MainService : Service() {
 
@@ -22,11 +29,9 @@ class MainService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        appDb = Room.databaseBuilder(
-            application,
-            NkataDatabase::class.java,
-            Util.DatabaseName
-        ).build()
+        val repo = LogicRepositoryImpl(appDb.dao())
+
+        val v = NkataViewModel(repo)
 
         okHttpClient = OkHttpClient()
 

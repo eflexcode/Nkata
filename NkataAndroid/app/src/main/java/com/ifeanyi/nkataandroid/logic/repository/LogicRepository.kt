@@ -8,6 +8,12 @@ import com.ifeanyi.nkataandroid.logic.database.room.model.NetworkBaseUrl
 import com.ifeanyi.nkataandroid.logic.database.room.model.Notification
 import com.ifeanyi.nkataandroid.logic.database.room.model.Profile
 import com.ifeanyi.nkataandroid.logic.database.room.model.Token
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.CheckUsername
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.CheckUsernameResult
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.JwtToken
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.LogInUsername
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.SignUp
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.StandardResponse
 import kotlinx.coroutines.flow.Flow
 
 interface LogicRepository {
@@ -114,5 +120,8 @@ interface LogicRepository {
 
     fun deleteBaseUrl()
 
-//Local Database end---------------------------------------------------------------------------
+    //Local Database end-------------------------------------------------------------------------------------------------------------------------------------------------
+    suspend fun signUp(signUp: SignUp): StandardResponse
+    suspend fun signInUsername(login: LogInUsername): JwtToken
+    suspend fun checkUsername(checkUsername: CheckUsername): CheckUsernameResult
 }

@@ -15,11 +15,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.room.Room
 import com.ifeanyi.nkataandroid.logic.Util
 import com.ifeanyi.nkataandroid.logic.database.room.NkataDatabase
+import com.ifeanyi.nkataandroid.ui.screens.ProfileScreen
 import com.ifeanyi.nkataandroid.ui.theme.NkataAndroidTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         if (intent?.action == Intent.ACTION_SEND) {
             if ("text/plain" == intent.type) {
                 //for text forwarding in
@@ -35,6 +37,7 @@ class MainActivity : ComponentActivity() {
                         name = "Android",
                         modifier = Modifier.padding(innerPadding)
                     )
+                    ProfileScreen()
                 }
             }
         }

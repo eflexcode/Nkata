@@ -17,24 +17,24 @@ import kotlinx.coroutines.flow.Flow
 interface NkataDatabaseDao {//can also be called databaseRepository
 
     @Insert
-    suspend fun insertProfile(profile: Profile)
+    fun insertProfile(profile: Profile)
 
     @Query("SELECT * FROM profile")
-    suspend fun getProfile(): Flow<List<Profile>>
+    fun getProfile(): Flow<List<Profile>>
 
     @Query("DELETE FROM profile")
-    suspend fun deleteProfile()
+    fun deleteProfile()
 
 //profile end------------------------------------------------------------------------------------------------------------------------------------------------------
 
     @Insert
-    suspend fun insertChat(chat: Chat)
+    fun insertChat(chat: Chat)
 
     @Query("SELECT * FROM chat")
-    suspend fun getChat(): Flow<List<Chat>>
+    fun getChat(): Flow<List<Chat>>
 
     @Query("UPDATE chat SET cloudId = :cloudId,displayName=:displayName,email = :email,password =:password,imgUrl=:imgUrl,bio=:bio,isOnline=:isOnline,friendsCount=:friendsCount,groupsCount=:groupsCount,role=:role,createdAt=:createdAt ,modifiedAt=:modifiedAt WHERE id =:id ")
-    suspend fun updateChat(
+    fun updateChat(
         id: Int,
         cloudId: Int,
         displayName: String,
@@ -51,30 +51,30 @@ interface NkataDatabaseDao {//can also be called databaseRepository
     )
 
     @Query("DELETE FROM chat WHERE id=:id")
-    suspend fun deleteChat(id: Int)
+    fun deleteChat(id: Int)
 
     @Query("DELETE FROM chat")
-    suspend fun deleteAllChat()
+    fun deleteAllChat()
 
     //chat end------------------------------------------------------------------------------------------------------------------------------------------------------
     @Insert
-    suspend fun insertToken(token: Token)
+    fun insertToken(token: Token)
 
     @Query("SELECT * FROM token")
-    suspend fun getToken(): Flow<List<Token>>
+    fun getToken(): Flow<List<Token>>
 
     @Query("DELETE FROM token")
-    suspend fun deleteToken()
+    fun deleteToken()
 
     //token end----------------------------------------------------------------------------------------------------------------------------------------------
     @Insert
-    suspend fun insertFriendship(friendship: Friendship)
+    fun insertFriendship(friendship: Friendship)
 
     @Query("SELECT * FROM friendship")
-    suspend fun getFriendships(): Flow<List<Friendship>>
+    fun getFriendships(): Flow<List<Friendship>>
 
     @Query("UPDATE friendship SET cloudId =:cloudId,username =:username,lastMessage =:lastMessage,friendUsername=:friendUsername,friendshipType=:friendshipType,groupId =:groupId,createdAt=:createdAt,modifiedAt=:modifiedAt WHERE id =:id")
-    suspend fun updateFriendship(
+    fun updateFriendship(
         id: Int,
         cloudId: Int,
         username: String,
@@ -87,38 +87,38 @@ interface NkataDatabaseDao {//can also be called databaseRepository
     )
 
     @Query("DELETE FROM friendship WHERE id=:id")
-    suspend fun deleteFriendship(id: Int)
+    fun deleteFriendship(id: Int)
 
     @Query("DELETE FROM friendship")
-    suspend fun deleteAllFriendships()
+    fun deleteAllFriendships()
 
     //friendship end----------------------------------------------------------------------------------------------------------------------------------------------
     @Insert
-    suspend fun insertNotification(notification: Notification)
+    fun insertNotification(notification: Notification)
 
     @Query("SELECT * FROM notification")
-    suspend fun getNotifications(): Flow<List<Notification>>
+    fun getNotifications(): Flow<List<Notification>>
 
     @Query("UPDATE notification SET seen =:seen, modifiedAt =:modifiedAt WHERE id =:id")
-    suspend fun updateNotificationSeen(
+    fun updateNotificationSeen(
         id: Int,
         seen: Boolean,
         modifiedAt: String
     )
 
     @Query("DELETE FROM notification WHERE id=:id")
-    suspend fun deleteNotification(id: Int)
+    fun deleteNotification(id: Int)
 
     //notification end----------------------------------------------------------------------------------------------------------------------------------------------
     @Insert
-    suspend fun insertMessage(message: Message)
+    fun insertMessage(message: Message)
 
     //TODO update message call on server
     @Query("SELECT * FROM message WHERE senderUsername =:senderUsername ORDER BY createdAt ASC")
-    suspend fun getMessageBySendUsername(senderUsername : String):  Flow<List<Message>>
+    fun getMessageBySendUsername(senderUsername: String): Flow<List<Message>>
 
     @Query("UPDATE message SET cloudId =:cloudId,messageID =:messageID,friendshipID =:friendshipID,senderUsername=:senderUsername,messageType=:messageType,textContent =:textContent,media=:media,createdAt=:createdAt,modifiedAt=:modifiedAt WHERE id =:id")
-    suspend fun updateMessage(
+    fun updateMessage(
         id: Int? = null,
         cloudId: Int? = null,
         messageID: String,
@@ -132,20 +132,20 @@ interface NkataDatabaseDao {//can also be called databaseRepository
     )
 
     @Query("DELETE FROM message WHERE id=:id")
-    suspend fun deleteMessage(id: Int)
+    fun deleteMessage(id: Int)
 
     @Query("DELETE FROM message WHERE senderUsername=:senderUsername")
-    suspend fun deleteMessageEmptyChat(senderUsername: String)
+    fun deleteMessageEmptyChat(senderUsername: String)
 
     //Message end----------------------------------------------------------------------------------------------------------------------------------------------
     @Insert
-    suspend fun insertBaseUrl(baseUrl: NetworkBaseUrl)
+    fun insertBaseUrl(baseUrl: NetworkBaseUrl)
 
     //TODO update message call on server
     @Query("SELECT * FROM NetworkBaseUrl")
-    suspend fun getBaseUrl():  Flow<List<NetworkBaseUrl>>
+    fun getBaseUrl(): Flow<List<NetworkBaseUrl>>
 
     @Query("DELETE FROM NetworkBaseUrl")
-    suspend fun deleteBaseUrl()
+    fun deleteBaseUrl()
 
 }

@@ -9,10 +9,21 @@ import com.ifeanyi.nkataandroid.logic.database.room.model.NetworkBaseUrl
 import com.ifeanyi.nkataandroid.logic.database.room.model.Notification
 import com.ifeanyi.nkataandroid.logic.database.room.model.Profile
 import com.ifeanyi.nkataandroid.logic.database.room.model.Token
+import com.ifeanyi.nkataandroid.logic.network.retrofit.apiservice.NkataRetrofitClient
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.CheckUsername
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.CheckUsernameResult
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.JwtToken
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.LogInUsername
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.SignUp
+import com.ifeanyi.nkataandroid.logic.network.retrofit.model.StandardResponse
 import com.ifeanyi.nkataandroid.logic.repository.LogicRepository
 import kotlinx.coroutines.flow.Flow
+import retrofit2.Retrofit
 
 class LogicRepositoryImpl(val nkataDatabaseDao: NkataDatabaseDao): LogicRepository {
+
+    lateinit var retrofitClient: NkataRetrofitClient
+
 
     override fun insertProfile(profile: Profile) {
         TODO("Not yet implemented")
@@ -154,14 +165,27 @@ class LogicRepositoryImpl(val nkataDatabaseDao: NkataDatabaseDao): LogicReposito
     }
 
     override fun insertBaseUrl(baseUrl: NetworkBaseUrl) {
-        TODO("Not yet implemented")
+        nkataDatabaseDao.insertBaseUrl(baseUrl)
     }
 
     override fun getBaseUrl(): Flow<List<NetworkBaseUrl>> {
-        TODO("Not yet implemented")
+      return nkataDatabaseDao.getBaseUrl()
     }
 
     override fun deleteBaseUrl() {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun signUp(signUp: SignUp): StandardResponse {
+//       retrofitClient.signUp(signUp)
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun signInUsername(login: LogInUsername): JwtToken {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun checkUsername(checkUsername: CheckUsername): CheckUsernameResult {
         TODO("Not yet implemented")
     }
 

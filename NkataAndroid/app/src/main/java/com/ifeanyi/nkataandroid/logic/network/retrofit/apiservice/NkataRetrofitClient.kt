@@ -11,8 +11,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 
-interface NkataRetrofitService {
-
+interface NkataRetrofitClient {
 
     //    r.Route("/auth", func(r chi.Router) {
 //        r.Post("/sign-up", apiService.RegisterUser)
