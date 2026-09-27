@@ -33,7 +33,7 @@ interface NkataDatabaseDao {//can also be called databaseRepository
     @Query("SELECT * FROM chat")
     fun getChat(): Flow<List<Chat>>
 
-    @Query("UPDATE chat SET cloudId = :cloudId,displayName=:displayName,email = :email,password =:password,imgUrl=:imgUrl,bio=:bio,isOnline=:isOnline,friendsCount=:friendsCount,groupsCount=:groupsCount,role=:role,createdAt=:createdAt ,modifiedAt=:modifiedAt WHERE id =:id ")
+    @Query("UPDATE chat SET cloudId = :cloudId,displayName=:displayName,email = :email,password =:password,imgUrl=:imgUrl,bio=:bio,isOnline=:isOnline,friendsCount=:friendsCount,groupsCount=:groupsCount,unreadCount=:unreadCount,role=:role,createdAt=:createdAt ,modifiedAt=:modifiedAt WHERE id =:id ")
     fun updateChat(
         id: Int,
         cloudId: Int,
@@ -45,6 +45,7 @@ interface NkataDatabaseDao {//can also be called databaseRepository
         isOnline: String,
         friendsCount: Int,
         groupsCount: Int,
+         unreadCount: Int,
         role: String,
         createdAt: String,
         modifiedAt: String

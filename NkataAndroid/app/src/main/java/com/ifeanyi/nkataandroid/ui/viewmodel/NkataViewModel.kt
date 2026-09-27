@@ -54,13 +54,16 @@ class NkataViewModel(var repo: LogicRepository?) : ViewModel() {
                 var repo = LogicRepositoryImpl(appDb.dao())
 
                 var tokenFlow = repo.getToken()
+//                var tokenList =
+//                    tokenFlow.asLiveData().value ?: throw NullPointerException("no token found")
                 var tokenList =
-                    tokenFlow.asLiveData().value ?: throw NullPointerException("no token found")
-                var token = tokenList[0]
+                    tokenFlow.asLiveData().value
+
+                var token = tokenList?.get(0)
 
                 //retrofit
                 val r = Retrofit.Builder()
-                    .baseUrl(token.token)
+                    .baseUrl(token?.token)
                     .addConverterFactory(
                         GsonConverterFactory.create()
                     )
@@ -78,27 +81,26 @@ class NkataViewModel(var repo: LogicRepository?) : ViewModel() {
         return repo?.getToken()
     }
 
-
     fun insertProfile(profile: Profile) {
-
+        repo?.insertProfile(profile)
     }
 
-    fun getProfile(): Flow<List<Profile>> {
-
+    fun getProfile(): Flow<List<Profile>>? {
+        return repo?.getProfile()
     }
 
     fun deleteProfile() {
-
+        repo?.deleteProfile()
     }
 
 //profile end------------------------------------------------------------------------------------------------------------------------------------------------------
 
     fun insertChat(chat: Chat) {
-
+        repo?.insertChat(chat)
     }
 
-    fun getChat(): Flow<List<Chat>> {
-
+    fun getChat(): Flow<List<Chat>>? {
+        return repo?.getChat()
     }
 
     fun updateChat(
@@ -116,15 +118,29 @@ class NkataViewModel(var repo: LogicRepository?) : ViewModel() {
         createdAt: String,
         modifiedAt: String
     ) {
-
+        repo?.updateChat(
+            id,
+            cloudId,
+            displayName,
+            email,
+            password,
+            imgUrl,
+            bio,
+            isOnline,
+            friendsCount,
+            groupsCount,
+            role,
+            createdAt,
+            modifiedAt
+        )
     }
 
     fun deleteChat(id: Int) {
-
+        repo?.deleteChat(id)
     }
 
     fun deleteAllChat() {
-
+        repo?.deleteAllChat()
     }
 
     //chat end------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -132,21 +148,21 @@ class NkataViewModel(var repo: LogicRepository?) : ViewModel() {
         repo?.insertToken(token = token)
     }
 
-    fun getToken(): Flow<List<Token>> {
-
+    fun getToken(): Flow<List<Token>>? {
+        return repo?.getToken()
     }
 
     fun deleteToken() {
-
+        repo?.deleteToken()
     }
 
     //token end----------------------------------------------------------------------------------------------------------------------------------------------
     fun insertFriendship(friendship: Friendship) {
-
+        repo?.insertFriendship(friendship)
     }
 
-    fun getFriendships(): Flow<List<Friendship>> {
-
+    fun getFriendships(): Flow<List<Friendship>>? {
+        return repo?.getFriendships();
     }
 
     fun updateFriendship(
@@ -160,24 +176,34 @@ class NkataViewModel(var repo: LogicRepository?) : ViewModel() {
         createdAt: String,
         modifiedAt: String
     ) {
-
+        repo?.updateFriendship(
+            id,
+            cloudId,
+            username,
+            lastMessage,
+            friendUsername,
+            friendshipType,
+            groupId,
+            createdAt,
+            modifiedAt
+        )
     }
 
     fun deleteFriendship(id: Int) {
-
+        repo?.deleteFriendship(id)
     }
 
     fun deleteAllFriendships() {
-
+        repo?.deleteAllFriendships()
     }
 
     //friendship end----------------------------------------------------------------------------------------------------------------------------------------------
     fun insertNotification(notification: Notification) {
-
+        repo?.insertNotification(notification)
     }
 
-    fun getNotifications(): Flow<List<Notification>> {
-
+    fun getNotifications(): Flow<List<Notification>>? {
+        return repo?.getNotifications()
     }
 
     fun updateNotificationSeen(
@@ -185,20 +211,20 @@ class NkataViewModel(var repo: LogicRepository?) : ViewModel() {
         seen: Boolean,
         modifiedAt: String
     ) {
-
+        repo?.updateNotificationSeen(id, seen, modifiedAt)
     }
 
     fun deleteNotification(id: Int) {
-
+        repo?.deleteNotification(id)
     }
 
     //notification end----------------------------------------------------------------------------------------------------------------------------------------------
     fun insertMessage(message: Message) {
-
+        repo?.insertMessage(message)
     }
 
-    fun getMessageBySendUsername(senderUsername: String): Flow<List<Message>> {
-
+    fun getMessageBySendUsername(senderUsername: String): Flow<List<Message>>? {
+        return repo?.getMessageBySendUsername(senderUsername)
     }
 
     fun updateMessage(
@@ -213,41 +239,52 @@ class NkataViewModel(var repo: LogicRepository?) : ViewModel() {
         createdAt: String,
         modifiedAt: String
     ) {
-
+        repo?.updateMessage(
+            id,
+            cloudId,
+            messageID,
+            friendshipID,
+            senderUsername,
+            messageType,
+            textContent,
+            media,
+            createdAt,
+            modifiedAt
+        )
     }
 
     fun deleteMessage(id: Int) {
-
+        repo?.deleteMessage(id)
     }
 
     fun deleteMessageEmptyChat(senderUsername: String) {
-
+        repo?.deleteMessageEmptyChat(senderUsername)
     }
 
     //Message end----------------------------------------------------------------------------------------------------------------------------------------------
     fun insertBaseUrl(baseUrl: NetworkBaseUrl) {
-
+        repo?.insertBaseUrl(baseUrl)
     }
 
-    fun getBaseUrl(): Flow<List<NetworkBaseUrl>> {
-
+    fun getBaseUrl(): Flow<List<NetworkBaseUrl>>? {
+        return repo?.getBaseUrl()
     }
 
     fun deleteBaseUrl() {
-
+        repo?.deleteBaseUrl()
     }
 
     //Local Database end-------------------------------------------------------------------------------------------------------------------------------------------------
-    fun signUp(signUp: SignUp): StandardResponse {
-
+    suspend fun signUp(signUp: SignUp): StandardResponse? {
+        return repo?.signUp(signUp)
     }
 
-    fun signInUsername(login: LogInUsername): JwtToken {
-
+    suspend fun signInUsername(login: LogInUsername): JwtToken? {
+        return repo?.signInUsername(login = login)
     }
 
-    fun checkUsername(checkUsername: CheckUsername): CheckUsernameResult {
-
+    suspend fun checkUsername(checkUsername: CheckUsername): CheckUsernameResult? {
+        return repo?.checkUsername(checkUsername)
     }
 
 }

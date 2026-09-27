@@ -121,7 +121,7 @@ interface LogicRepository {
     fun deleteBaseUrl()
 
     //Local Database end-------------------------------------------------------------------------------------------------------------------------------------------------
-    suspend fun signUp(signUp: SignUp): StandardResponse
-    suspend fun signInUsername(login: LogInUsername): JwtToken
-    suspend fun checkUsername(checkUsername: CheckUsername): CheckUsernameResult
+    suspend fun signUp(signUp: SignUp): StandardResponse?
+    suspend fun signInUsername(login: LogInUsername): JwtToken?
+    suspend fun checkUsername(checkUsername: CheckUsername): CheckUsernameResult?
 }

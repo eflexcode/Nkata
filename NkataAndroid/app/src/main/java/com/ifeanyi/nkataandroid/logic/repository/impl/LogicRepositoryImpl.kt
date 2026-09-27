@@ -1,5 +1,6 @@
 package com.ifeanyi.nkataandroid.logic.repository.impl
 
+import androidx.compose.ui.Modifier
 import com.ifeanyi.nkataandroid.logic.database.room.dao.NkataDatabaseDao
 import com.ifeanyi.nkataandroid.logic.database.room.model.Chat
 import com.ifeanyi.nkataandroid.logic.database.room.model.Friendship
@@ -18,9 +19,12 @@ import com.ifeanyi.nkataandroid.logic.network.retrofit.model.SignUp
 import com.ifeanyi.nkataandroid.logic.network.retrofit.model.StandardResponse
 import com.ifeanyi.nkataandroid.logic.repository.LogicRepository
 import kotlinx.coroutines.flow.Flow
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import retrofit2.Retrofit
 
-class LogicRepositoryImpl(val nkataDatabaseDao: NkataDatabaseDao): LogicRepository {
+class LogicRepositoryImpl(val nkataDatabaseDao: NkataDatabaseDao) : LogicRepository {
 
     lateinit var retrofitClient: NkataRetrofitClient
 
@@ -169,24 +173,81 @@ class LogicRepositoryImpl(val nkataDatabaseDao: NkataDatabaseDao): LogicReposito
     }
 
     override fun getBaseUrl(): Flow<List<NetworkBaseUrl>> {
-      return nkataDatabaseDao.getBaseUrl()
+        return nkataDatabaseDao.getBaseUrl()
     }
 
     override fun deleteBaseUrl() {
-        TODO("Not yet implemented")
+        return nkataDatabaseDao.deleteBaseUrl()
     }
 
-    override suspend fun signUp(signUp: SignUp): StandardResponse {
-//       retrofitClient.signUp(signUp)
-        TODO("Not yet implemented")
+    override suspend fun signUp(signUp: SignUp): StandardResponse? {
+        var standardResponse: StandardResponse? = StandardResponse("0", "0")
+        retrofitClient.signUp(signUp).enqueue(object : Callback<StandardResponse> {
+            override fun onResponse(
+                call: Call<StandardResponse>,
+                response: Response<StandardResponse>
+            ) {
+                if (response.isSuccessful) {
+                    standardResponse = response.body()
+                    println(call.request().url.toString() + ": ok")
+                } else {
+                    //server error
+                    standardResponse =
+                        StandardResponse(response.code().toString(), response.message())
+                    println(call.request().url.toString() + ": server error")
+                }
+            }
+
+            override fun onFailure(call: Call<StandardResponse?>, t: Throwable) {
+                //network error
+                standardResponse = StandardResponse("09", "No internet")
+                println(call.request().url.toString() + ": network error")
+
+            }
+        })
+        return standardResponse
     }
 
-    override suspend fun signInUsername(login: LogInUsername): JwtToken {
-        TODO("Not yet implemented")
+    override suspend fun signInUsername(login: LogInUsername): JwtToken? {
+        var token: JwtToken? = null
+        retrofitClient.signInUsername(login).enqueue(object : Callback<JwtToken> {
+            override fun onResponse(call: Call<JwtToken?>, response: Response<JwtToken?>) {
+               if (response.isSuccessful){
+                   println(call.request().url.toString() + ": ok")
+                   token = response.body()
+
+               }else{
+                   println(call.request().url.toString() + ": server error")
+               }
+            }
+
+            override fun onFailure(call: Call<JwtToken?>, t: Throwable) {
+                println(call.request().url.toString() + ": network error")
+                token = null
+            }
+        })
+        return token
     }
 
-    override suspend fun checkUsername(checkUsername: CheckUsername): CheckUsernameResult {
-        TODO("Not yet implemented")
+    override suspend fun checkUsername(checkUsername: CheckUsername): CheckUsernameResult? {
+        var checkUsernameResult : CheckUsernameResult? = null
+        retrofitClient.checkUsername(checkUsername).enqueue(object : Callback<CheckUsernameResult> {
+            override fun onResponse(call: Call<CheckUsernameResult?>, response: Response<CheckUsernameResult?>) {
+                if (response.isSuccessful){
+                    println(call.request().url.toString() + ": ok")
+                    checkUsernameResult = response.body()
+
+                }else{
+                    println(call.request().url.toString() + ": server error")
+                }
+            }
+
+            override fun onFailure(call: Call<CheckUsernameResult?>, t: Throwable) {
+                println(call.request().url.toString() + ": network error")
+                checkUsernameResult = null
+            }
+        })
+        return checkUsernameResult
     }
 
 }

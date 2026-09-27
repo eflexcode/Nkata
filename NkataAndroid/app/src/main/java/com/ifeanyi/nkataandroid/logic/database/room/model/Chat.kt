@@ -16,6 +16,7 @@ data class Chat(//that's profile of each firend/friendship
     val isOnline: String,
     val friendsCount: Int,
     val groupsCount: Int,
+    val unreadCount: Int,
     val role: String,
     val createdAt: String,
     val modifiedAt: String
