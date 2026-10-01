@@ -9,14 +9,5 @@ import com.ifeanyi.nkataandroid.ui.viewmodel.NkataViewModel
 @Composable
 fun ProfileScreen(viewModel: NkataViewModel = viewModel()) {
   val g = viewModel.g()?.collectAsState(emptyList())
- val f = g?.value
+    val f = g?.value
 }
-
-
-
-
-
-
-
-
-

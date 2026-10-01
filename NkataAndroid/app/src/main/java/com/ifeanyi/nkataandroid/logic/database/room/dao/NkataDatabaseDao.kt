@@ -99,7 +99,6 @@ interface NkataDatabaseDao {//can also be called databaseRepository
 
     @Query("SELECT * FROM notification")
     fun getNotifications(): Flow<List<Notification>>
-
     @Query("UPDATE notification SET seen =:seen, modifiedAt =:modifiedAt WHERE id =:id")
     fun updateNotificationSeen(
         id: Int,

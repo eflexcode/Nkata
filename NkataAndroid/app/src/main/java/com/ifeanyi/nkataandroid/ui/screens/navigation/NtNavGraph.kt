@@ -19,7 +19,8 @@ import com.ifeanyi.nkataandroid.ui.screens.WelcomeScreen
 import com.ifeanyi.nkataandroid.ui.viewmodel.NkataViewModel
 
 @Composable
-fun NtNavGraph(navController: NavHostController, viewModel: NkataViewModel = viewModel()) {
+//fun NtNavGraph(navController: NavHostController, viewModel: NkataViewModel = viewModel()) {
+fun NtNavGraph(navController: NavHostController) {
 
     NavHost(navController, NavScreens.SplashScreenDestination.route) {
         composable(route = NavScreens.SplashScreenDestination.route) {
@@ -48,6 +49,12 @@ fun NtNavGraph(navController: NavHostController, viewModel: NkataViewModel = vie
         }
         composable(route = NavScreens.ProfileScreenDestination.route) {
             ProfileScreen()
+        }
+        composable(route = NavScreens.FriendRequestScreenDestination.route) {
+            FriendRequestScreen()
+        }
+        composable(route = NavScreens.FriendRequestScreenDestination.route) {
+            FriendRequestScreen()
         }
         composable(route = NavScreens.FriendRequestScreenDestination.route) {
             FriendRequestScreen()
