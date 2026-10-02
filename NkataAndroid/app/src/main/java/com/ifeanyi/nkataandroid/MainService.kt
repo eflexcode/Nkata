@@ -5,6 +5,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.room.Room
 import com.ifeanyi.nkataandroid.logic.Util
@@ -30,15 +31,27 @@ class MainService : Service() {
         super.onCreate()
 
         val repo = LogicRepositoryImpl(appDb.dao())
+        //no retrofit client in repo hopefully it would innit in vm factory
 
         val v = NkataViewModel(repo)
 
+
         okHttpClient = OkHttpClient()
 
-        val f = "http://localhots:5557/v1/general-authenticated/ws/{user_id}"
+        val baseUrl = v.getBaseUrl()?.asLiveData()
+        val baseUrlValue = baseUrl?.value?.get(0)
+
+        val userId = v.getProfile()?.asLiveData()
+        val userIdValue = userId?.value?.get(0)?.cloudId
+
+        val token = v.getToken()?.asLiveData()
+        val tokenValue = token?.value?.get(0)?.token.toString()
+
+//        val wsUrl = "http://localhots:5557/v1/general-authenticated/ws/{hardcodeid}"
+        val wsUrl = baseUrlValue?.baseUrl + "/v1/general-authenticated/ws/" + userIdValue
         val request = Request.Builder()
-        request.addHeader("Authorization", "token")// get token from db
-        request.url(f)
+        request.addHeader("Authorization", tokenValue)// get token from db
+        request.url(wsUrl)
 
         val wsListener = WsListener()
         webSocket = okHttpClient.newWebSocket(request.build(), wsListener)
