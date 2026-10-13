@@ -57,7 +57,7 @@ class NkataViewModel(var repo: LogicRepository?) : ViewModel() {
 //                var tokenList =
 //                    tokenFlow.asLiveData().value ?: throw NullPointerException("no token found")
                 var tokenList =
-                    tokenFlow.asLiveData().value
+                    tokenFlow?.asLiveData()?.value
 
                 var token = tokenList?.get(0)
 

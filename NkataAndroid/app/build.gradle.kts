@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
+//    kotlin("plugin.serialization")
 }
 
 android {
@@ -86,4 +87,7 @@ dependencies {
 
     //color rendering
     implementation(libs.androidx.palette)
+
+    implementation(libs.accompanist.permissions)
+    implementation(libs.accompanist.pager)
 }

@@ -5,12 +5,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.ifeanyi.nkataandroid.ui.theme.*
 
-
-
 class UiUtility {
     companion object{
         val NkataButtonColor @Composable get() = if (isSystemInDarkTheme()) Color.Black else Color.White
         val NkataBackgroundColor @Composable get() = if (isSystemInDarkTheme()) Color.Black else Color.White
-        val NkataNavBarBackgroundColor @Composable get() = if (isSystemInDarkTheme()) DarkBackgroundGreen else Color.White
+        val NkataNavBarBackgroundColor @Composable get() = if (isSystemInDarkTheme()) DarkBackgroundGreen else LightBackgroundGreen
     }
 }

@@ -30,6 +30,12 @@ class MainService : Service() {
     override fun onCreate() {
         super.onCreate()
 
+        val appDb = Room.databaseBuilder(
+            this,
+            NkataDatabase::class.java,
+            Util.DatabaseName
+        ).build()
+
         val repo = LogicRepositoryImpl(appDb.dao())
         //no retrofit client in repo hopefully it would innit in vm factory
 
@@ -47,8 +53,8 @@ class MainService : Service() {
         val token = v.getToken()?.asLiveData()
         val tokenValue = token?.value?.get(0)?.token.toString()
 
-//        val wsUrl = "http://localhots:5557/v1/general-authenticated/ws/{hardcodeid}"
-        val wsUrl = baseUrlValue?.baseUrl + "/v1/general-authenticated/ws/" + userIdValue
+        val wsUrl = "http://localhots:5557/v1/general-authenticated/ws/{hardcodeid}"
+//        val wsUrl = baseUrlValue?.baseUrl + "/v1/general-authenticated/ws/" + userIdValue
         val request = Request.Builder()
         request.addHeader("Authorization", tokenValue)// get token from db
         request.url(wsUrl)

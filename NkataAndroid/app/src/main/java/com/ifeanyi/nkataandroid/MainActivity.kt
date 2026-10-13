@@ -35,6 +35,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 import com.ifeanyi.nkataandroid.ui.screens.ProfileScreen
 import com.ifeanyi.nkataandroid.ui.screens.navigation.NavScreens
 import com.ifeanyi.nkataandroid.ui.screens.navigation.NtNavGraph
@@ -44,8 +46,24 @@ import com.ifeanyi.nkataandroid.ui.theme.NavBarLabelColorSelected
 import com.ifeanyi.nkataandroid.ui.theme.NavBarLabelColor
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val permissionList = arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.INTERNET,
+            Manifest.permission.FOREGROUND_SERVICE,
+            Manifest.permission.FOREGROUND_SERVICE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.RECEIVE_BOOT_COMPLETED,
+            Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC,
+            Manifest.permission.POST_NOTIFICATIONS,
+        )
+
+
 
         if (intent?.action == Intent.ACTION_SEND) {
             if ("text/plain" == intent.type) {
@@ -54,18 +72,31 @@ class MainActivity : ComponentActivity() {
                 //for img forwarding  in
             }
         }
+
         enableEdgeToEdge()
         setContent {
             NkataAndroidTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                val readState =
+                    rememberPermissionState(permission = Manifest.permission.READ_EXTERNAL_STORAGE)
+
+                val permissionList = if (Build.VERSION.SDK_INT >= 33) {
+                    listOf(
+                        Manifest.permission.READ_MEDIA_AUDIO,
+//                Manifest.permission.WRITE_ME,
+                        Manifest.permission.POST_NOTIFICATIONS
                     )
-                    ProfileScreen()
+                } else {
+                    listOf(
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                }
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                   MainUi(Modifier.padding(innerPadding),this)
                 }
             }
         }
+
     }
 }
 
@@ -76,23 +107,8 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         modifier = modifier
     )
 }
-
-@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @Composable
-fun MainUi(application: Application, mainActivity: MainActivity) {
-
-    val permissionList = arrayOf(
-        Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.INTERNET,
-        Manifest.permission.FOREGROUND_SERVICE,
-        Manifest.permission.FOREGROUND_SERVICE_LOCATION,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.RECEIVE_BOOT_COMPLETED,
-        Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC,
-        Manifest.permission.POST_NOTIFICATIONS,
-    )
+fun MainUi(modifier: Modifier, mainActivity: MainActivity) {
 
     val TAG = "MainActivity"
     val navController = rememberNavController()
@@ -214,8 +230,6 @@ fun CreateBNV(navController: NavHostController) {
             }
         }
     }
-
-
 }
 
 @Preview(showBackground = true)

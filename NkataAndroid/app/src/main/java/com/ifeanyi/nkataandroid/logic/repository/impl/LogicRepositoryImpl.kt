@@ -33,8 +33,8 @@ class LogicRepositoryImpl(val nkataDatabaseDao: NkataDatabaseDao) : LogicReposit
         TODO("Not yet implemented")
     }
 
-    override fun getProfile(): Flow<List<Profile>> {
-        TODO("Not yet implemented")
+    override fun getProfile(): Flow<List<Profile>>? {
+      return null
     }
 
     override fun deleteProfile() {
@@ -79,8 +79,8 @@ class LogicRepositoryImpl(val nkataDatabaseDao: NkataDatabaseDao) : LogicReposit
         TODO("Not yet implemented")
     }
 
-    override fun getToken(): Flow<List<Token>> {
-        TODO("Not yet implemented")
+    override fun getToken(): Flow<List<Token>>? {
+       return null
     }
 
     override fun deleteToken() {

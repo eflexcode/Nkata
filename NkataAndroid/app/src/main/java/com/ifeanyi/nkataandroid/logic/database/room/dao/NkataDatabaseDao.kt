@@ -117,7 +117,7 @@ interface NkataDatabaseDao {//can also be called databaseRepository
     @Query("SELECT * FROM message WHERE senderUsername =:senderUsername ORDER BY createdAt ASC")
     fun getMessageBySendUsername(senderUsername: String): Flow<List<Message>>
 
-    @Query("UPDATE message SET cloudId =:cloudId,messageID =:messageID,friendshipID =:friendshipID,senderUsername=:senderUsername,messageType=:messageType,textContent =:textContent,media=:media,createdAt=:createdAt,modifiedAt=:modifiedAt WHERE id =:id")
+    @Query("UPDATE message SET cloudId =:cloudId,messageID =:messageID,friendshipID =:friendshipID,senderUsername=:senderUsername,messageType=:messageType,textContent =:textContent, mediaUrl = :mediaUrl, mediaType = :mediaType,createdAt=:createdAt,modifiedAt=:modifiedAt WHERE id =:id")
     fun updateMessage(
         id: Int? = null,
         cloudId: Int? = null,
@@ -126,7 +126,9 @@ interface NkataDatabaseDao {//can also be called databaseRepository
         senderUsername: String,
         messageType: String,//MessageChat,MessageReaction,MessageInfo
         textContent: String,
-        media: MMedia,
+//        media: MMedia,
+        mediaUrl: String,
+        mediaType: String,
         createdAt: String,
         modifiedAt: String
     )

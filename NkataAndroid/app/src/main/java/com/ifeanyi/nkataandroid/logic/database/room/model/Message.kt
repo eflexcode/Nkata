@@ -1,5 +1,6 @@
 package com.ifeanyi.nkataandroid.logic.database.room.model
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -14,7 +15,7 @@ data class Message(
     val senderUsername: String,
     val messageType: String,//MessageChat,MessageReaction,MessageInfo
     val textContent: String,
-    val media: MMedia,
+    @Embedded val media: MMedia,
     val createdAt: String,
     val modifiedAt: String
 ) {

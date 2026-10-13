@@ -1,4 +1,6 @@
 [versions]
+accompanistPager = "0.36.0"
+accompanistPermissions = "0.37.3"
 accompanistSystemuicontroller = "0.17.0"
 agp = "9.3.2"
 coilCompose = "2.2.0"
@@ -24,6 +26,8 @@ palette = "1.0.0"
 roomKtx = "2.5.1"
 
 [libraries]
+accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
 androidx-compose-material3-window-size-class1 = { module = "androidx.compose.material3:material3-window-size-class", version.ref = "material3WindowSizeClass" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

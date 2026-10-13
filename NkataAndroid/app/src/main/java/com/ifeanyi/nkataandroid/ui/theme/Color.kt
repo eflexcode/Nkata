@@ -11,6 +11,7 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val DarkBackgroundGreen = Color(0xFF023020)
+val LightBackgroundGreen = Color(0xFF05714B)
 
 val NavBarLabelColorSelected = Color(0xFF1b1b1f)
 val NavBarLabelColor = Color(0xFF45464f)

@@ -20,7 +20,7 @@ interface LogicRepository {
 
     fun insertProfile(profile: Profile)
 
-    fun getProfile(): Flow<List<Profile>>
+    fun getProfile(): Flow<List<Profile>>?
 
     fun deleteProfile()
 
@@ -53,7 +53,7 @@ interface LogicRepository {
     //chat end------------------------------------------------------------------------------------------------------------------------------------------------------
     fun insertToken(token: Token)
 
-    fun getToken(): Flow<List<Token>>
+    fun getToken(): Flow<List<Token>>?
 
     fun deleteToken()
 
